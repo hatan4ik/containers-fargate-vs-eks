@@ -1,5 +1,7 @@
 # Track B — EKS (Full)
 
+**PREREQUISITE**: complete `labs/00-setup` before starting this track.
+
 Goal: provision EKS via Terraform, deploy services via K8s manifests, and (optional) install Istio.
 
 ## Steps

@@ -11,3 +11,5 @@ Labs include break/fix scenarios for:
 - dependency latency
 - bad health checks
 - insufficient resources
+
+See [ECS Fargate Track](../labs/10-ecs-fargate-track/README.md) and [EKS Track](../labs/20-eks-track/README.md) for details.

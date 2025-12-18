@@ -1,5 +1,7 @@
 # Track A — ECS Fargate (Full)
 
+**PREREQUISITE**: complete `labs/00-setup` before starting this track.
+
 Goal: deploy gateway/users/orders to ECS Fargate behind an ALB.
 
 ## Steps
