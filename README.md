@@ -14,12 +14,18 @@ cd labs/01-local-containers
 ./scripts/smoke.sh
 ```
 
+## Services
+This repo contains three simple Node.js (Express) services:
+- `gateway`: API gateway that exposes a `/checkout` endpoint and forwards requests to the `orders` service.
+- `users`: Returns user information.
+- `orders`: Creates orders and calls the `users` service to get user information.
+
 ## Tracks
 - Track A (Fargate): `labs/10-ecs-fargate-track`
 - Track B (EKS): `labs/20-eks-track`
 - Capstone: `labs/99-capstone`
 
-## Prereqs
+## Prerequisites
 See `labs/00-setup/prerequisites.md`.
 
 ## CI/CD (OIDC)
