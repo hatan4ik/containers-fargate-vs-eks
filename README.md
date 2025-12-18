@@ -1,4 +1,4 @@
-# Zero-to-Hero: Containers, Service Communication, ECS Fargate vs EKS
+# Containers, Service Communication, ECS Fargate vs EKS
 
 Production-grade, O’Reilly-style learning repo for:
 - Containerized services that communicate (REST, gRPC, events)
