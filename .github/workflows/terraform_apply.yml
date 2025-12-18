@@ -1,0 +1,44 @@
+name: Terraform Apply (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      track:
+        description: "ecs or eks"
+        required: true
+        default: "ecs"
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform apply (ECS)
+        if: ${{ github.event.inputs.track == 'ecs' }}
+        working-directory: labs/10-ecs-fargate-track/terraform
+        run: |
+          terraform init
+          terraform apply -auto-approve             -var "image_gateway=${{ vars.ECR_REGISTRY }}/gateway:main"             -var "image_users=${{ vars.ECR_REGISTRY }}/users:main"             -var "image_orders=${{ vars.ECR_REGISTRY }}/orders:main"
+
+      - name: Terraform apply (EKS)
+        if: ${{ github.event.inputs.track == 'eks' }}
+        working-directory: labs/20-eks-track/terraform
+        run: |
+          terraform init
+          terraform apply -auto-approve

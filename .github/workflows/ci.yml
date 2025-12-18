@@ -1,0 +1,15 @@
+name: CI
+on:
+  push:
+  pull_request:
+
+jobs:
+  docker-build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [gateway, users, orders]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Docker build
+        run: docker build -t z2h/${{ matrix.service }}:ci services/${{ matrix.service }}

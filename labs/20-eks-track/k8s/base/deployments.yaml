@@ -1,0 +1,133 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: users
+  namespace: z2h
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: users }
+  template:
+    metadata:
+      labels: { app: users }
+    spec:
+      containers:
+        - name: users
+          image: REPLACE_ME/users:main
+          ports: [{ containerPort: 3001 }]
+          env:
+            - name: PORT
+              value: "3001"
+            - name: LOG_LEVEL
+              value: "info"
+          readinessProbe:
+            httpGet: { path: /healthz, port: 3001 }
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          resources:
+            requests: { cpu: "100m", memory: "128Mi" }
+            limits: { cpu: "300m", memory: "256Mi" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: users
+  namespace: z2h
+spec:
+  selector: { app: users }
+  ports:
+    - port: 3001
+      targetPort: 3001
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orders
+  namespace: z2h
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: orders }
+  template:
+    metadata:
+      labels: { app: orders }
+    spec:
+      containers:
+        - name: orders
+          image: REPLACE_ME/orders:main
+          ports: [{ containerPort: 3002 }]
+          env:
+            - name: PORT
+              value: "3002"
+            - name: LOG_LEVEL
+              value: "info"
+            - name: USERS_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: service-config
+                  key: USERS_BASE_URL
+          readinessProbe:
+            httpGet: { path: /healthz, port: 3002 }
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          resources:
+            requests: { cpu: "100m", memory: "128Mi" }
+            limits: { cpu: "300m", memory: "256Mi" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orders
+  namespace: z2h
+spec:
+  selector: { app: orders }
+  ports:
+    - port: 3002
+      targetPort: 3002
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway
+  namespace: z2h
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: gateway }
+  template:
+    metadata:
+      labels: { app: gateway }
+    spec:
+      containers:
+        - name: gateway
+          image: REPLACE_ME/gateway:main
+          ports: [{ containerPort: 3000 }]
+          env:
+            - name: PORT
+              value: "3000"
+            - name: LOG_LEVEL
+              value: "info"
+            - name: ORDERS_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: service-config
+                  key: ORDERS_BASE_URL
+          readinessProbe:
+            httpGet: { path: /healthz, port: 3000 }
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          resources:
+            requests: { cpu: "100m", memory: "128Mi" }
+            limits: { cpu: "300m", memory: "256Mi" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway
+  namespace: z2h
+spec:
+  selector: { app: gateway }
+  ports:
+    - port: 80
+      targetPort: 3000
+  type: LoadBalancer

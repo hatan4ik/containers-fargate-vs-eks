@@ -1,0 +1,44 @@
+name: Build and Push to ECR (OIDC)
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  ECR_REGISTRY: ${{ vars.ECR_REGISTRY }}
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [gateway, users, orders]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Ensure ECR repo exists
+        run: |
+          aws ecr describe-repositories --repository-names "${{ matrix.service }}" >/dev/null 2>&1 ||           aws ecr create-repository --repository-name "${{ matrix.service }}" --image-scanning-configuration scanOnPush=true >/dev/null
+
+      - name: Build
+        run: |
+          docker build -t "${{ env.ECR_REGISTRY }}/${{ matrix.service }}:main" "services/${{ matrix.service }}"
+
+      - name: Push
+        run: |
+          docker push "${{ env.ECR_REGISTRY }}/${{ matrix.service }}:main"

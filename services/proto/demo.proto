@@ -1,0 +1,9 @@
+syntax = "proto3";
+package demo;
+
+service Users {
+  rpc GetUser (UserRequest) returns (UserResponse) {}
+}
+
+message UserRequest { string id = 1; }
+message UserResponse { string id = 1; string name = 2; string tier = 3; }

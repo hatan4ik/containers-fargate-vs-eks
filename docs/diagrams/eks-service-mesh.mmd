@@ -1,0 +1,8 @@
+flowchart LR
+  Internet --> LB[(K8s Service LB / Ingress)]
+  LB --> GW[Gateway Pod]
+  GW --> ORD[Orders Service]
+  ORD --> USR[Users Service]
+  subgraph "Optional Service Mesh"
+    GW -->|mTLS + canary + retries| ORD
+  end

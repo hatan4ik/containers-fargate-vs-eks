@@ -1,0 +1,7 @@
+flowchart LR
+  Client --> Entry
+  subgraph Platform
+    Entry --> GW[Gateway]
+    GW --> ORD[Orders]
+    ORD --> USR[Users]
+  end

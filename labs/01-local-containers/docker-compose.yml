@@ -1,0 +1,30 @@
+services:
+  users:
+    build: ../../services/users
+    environment:
+      - PORT=3001
+      - LOG_LEVEL=info
+    ports:
+      - "3001:3001"
+
+  orders:
+    build: ../../services/orders
+    environment:
+      - PORT=3002
+      - LOG_LEVEL=info
+      - USERS_BASE_URL=http://users:3001
+    ports:
+      - "3002:3002"
+    depends_on:
+      - users
+
+  gateway:
+    build: ../../services/gateway
+    environment:
+      - PORT=3000
+      - LOG_LEVEL=info
+      - ORDERS_BASE_URL=http://orders:3002
+    ports:
+      - "3000:3000"
+    depends_on:
+      - orders

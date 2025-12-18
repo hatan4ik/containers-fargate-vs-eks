@@ -1,0 +1,8 @@
+flowchart LR
+  Internet --> ALB
+  ALB --> GW[Gateway (Fargate)]
+  GW --> ORD[Orders (Fargate)]
+  ORD --> USR[Users (Fargate)]
+  GW --> CW[(CloudWatch Logs)]
+  ORD --> CW
+  USR --> CW
