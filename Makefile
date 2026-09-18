@@ -11,6 +11,10 @@ TERRAFORM_MODULES := \
 
 TERRAFORM_ROOTS := \
 	bootstrap/state-backend \
+	environments/fargate/dev \
+	environments/fargate/prod \
+	environments/eks/dev \
+	environments/eks/prod \
 	labs/10-ecs-fargate-track/terraform \
 	labs/20-eks-track/terraform
 

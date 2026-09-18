@@ -1,0 +1,6 @@
+bucket       = "replace-with-state-bucket-name"
+key          = "containers-fargate-vs-eks/fargate/dev/terraform.tfstate"
+region       = "us-east-1"
+kms_key_id   = "replace-with-kms-key-id"
+encrypt      = true
+use_lockfile = true

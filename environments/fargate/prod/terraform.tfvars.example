@@ -1,0 +1,28 @@
+organization       = "hatan4ik"
+region             = "us-east-1"
+vpc_cidr           = "10.40.0.0/16"
+availability_zones = ["us-east-1a", "us-east-1b", "us-east-1c"]
+single_nat_gateway = false
+
+migration_name_override = null
+
+service_images = {
+  gateway = "123456789012.dkr.ecr.us-east-1.amazonaws.com/gateway@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  orders  = "123456789012.dkr.ecr.us-east-1.amazonaws.com/orders@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  users   = "123456789012.dkr.ecr.us-east-1.amazonaws.com/users@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+}
+service_desired_counts = { gateway = 3, orders = 2, users = 2 }
+gateway_autoscaling = {
+  min_capacity = 3
+  max_capacity = 10
+  cpu_target   = 60
+}
+
+certificate_arn    = "arn:aws:acm:us-east-1:123456789012:certificate/replace-me"
+alb_ingress_cidrs  = ["203.0.113.0/24"]
+https_egress_cidrs = ["10.0.0.0/8"]
+
+tags = {
+  Owner      = "platform"
+  CostCenter = "replace-me"
+}

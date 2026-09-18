@@ -1,0 +1,28 @@
+organization        = "hatan4ik"
+region              = "us-east-1"
+vpc_cidr            = "10.40.0.0/16"
+availability_zones  = ["us-east-1a", "us-east-1b"]
+single_nat_gateway  = true
+
+# Keep null for a new environment. Set only after state-address verification.
+migration_name_override = null
+
+service_images = {
+  gateway = "123456789012.dkr.ecr.us-east-1.amazonaws.com/gateway@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  orders  = "123456789012.dkr.ecr.us-east-1.amazonaws.com/orders@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  users   = "123456789012.dkr.ecr.us-east-1.amazonaws.com/users@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+}
+service_desired_counts = { gateway = 2, orders = 2, users = 2 }
+gateway_autoscaling    = null
+
+certificate_arn                = null
+allow_insecure_http            = true
+alb_ingress_cidrs              = ["203.0.113.0/24"]
+allow_public_ingress           = false
+https_egress_cidrs             = ["10.0.0.0/8"]
+allow_public_https_egress      = false
+
+tags = {
+  Owner      = "platform"
+  CostCenter = "replace-me"
+}

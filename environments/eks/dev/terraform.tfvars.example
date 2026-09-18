@@ -1,0 +1,19 @@
+organization       = "hatan4ik"
+region             = "us-east-1"
+vpc_cidr           = "10.50.0.0/16"
+availability_zones = ["us-east-1a", "us-east-1b"]
+single_nat_gateway = true
+
+migration_name_override = null
+kubernetes_version      = "1.30"
+node_instance_type      = "t3.medium"
+node_disk_size_gb       = 50
+node_scaling            = { min = 2, desired = 2, max = 5 }
+
+endpoint_public_access       = false
+endpoint_public_access_cidrs = []
+
+tags = {
+  Owner      = "platform"
+  CostCenter = "replace-me"
+}

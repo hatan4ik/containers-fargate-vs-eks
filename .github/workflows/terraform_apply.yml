@@ -1,69 +1,107 @@
-name: Terraform Apply (manual)
+name: Terraform Plan (manual)
 
 on:
   workflow_dispatch:
     inputs:
-      track:
-        description: "ecs or eks"
+      environment:
+        description: "Target environment with a configured GitHub Environment and S3 state"
         required: true
-        default: "ecs"
         type: choice
-        options: [ecs, eks]
-      image_tag:
-        description: "Required for ECS: immutable sha-<40 hex> tag built by the image workflow"
-        required: false
-        type: string
-      confirm_apply:
-        description: "Set to true after reviewing the intended environment and image tag"
-        required: true
-        default: "false"
-        type: choice
-        options: ["false", "true"]
+        options: [fargate-dev, fargate-prod, eks-dev, eks-prod]
 
 permissions:
-  id-token: write
   contents: read
-
-env:
-  AWS_REGION: ${{ vars.AWS_REGION }}
-  ECR_REGISTRY: ${{ vars.ECR_REGISTRY }}
-  IMAGE_TAG: ${{ inputs.image_tag }}
+  id-token: write
 
 jobs:
-  apply:
-    if: ${{ inputs.confirm_apply == 'true' }}
+  plan:
+    name: Plan ${{ inputs.environment }}
     runs-on: ubuntu-latest
-    environment: production
+    environment: ${{ inputs.environment }}
     concurrency:
-      group: terraform-${{ inputs.track }}
+      group: terraform-${{ inputs.environment }}-plan
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
-
-      - name: Configure AWS credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ${{ env.AWS_REGION }}
+          persist-credentials: false
 
       - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.6.6"
 
-      - name: Terraform apply (ECS)
-        if: ${{ inputs.track == 'ecs' }}
-        working-directory: labs/10-ecs-fargate-track/terraform
-        run: |
-          printf '%s\n' "$IMAGE_TAG" | grep -Eq '^sha-[0-9a-f]{40}$'
-          terraform init -lockfile=readonly
-          terraform plan -out=tfplan \
-            -var "image_gateway=${ECR_REGISTRY}/gateway:${IMAGE_TAG}" \
-            -var "image_users=${ECR_REGISTRY}/users:${IMAGE_TAG}" \
-            -var "image_orders=${ECR_REGISTRY}/orders:${IMAGE_TAG}"
-          terraform apply -auto-approve tfplan
+      - name: Configure AWS credentials through GitHub OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.TERRAFORM_PLAN_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
 
-      - name: Terraform apply (EKS)
-        if: ${{ inputs.track == 'eks' }}
-        working-directory: labs/20-eks-track/terraform
+      - name: Authorize tagged Git module retrieval
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          terraform init -lockfile=readonly
-          terraform plan -out=tfplan
-          terraform apply -auto-approve tfplan
+          git config --global url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
+
+      - name: Select immutable environment root
+        id: root
+        env:
+          TARGET: ${{ inputs.environment }}
+        run: |
+          case "$TARGET" in
+            fargate-dev) echo "path=environments/fargate/dev" >> "$GITHUB_OUTPUT" ;;
+            fargate-prod) echo "path=environments/fargate/prod" >> "$GITHUB_OUTPUT" ;;
+            eks-dev) echo "path=environments/eks/dev" >> "$GITHUB_OUTPUT" ;;
+            eks-prod) echo "path=environments/eks/prod" >> "$GITHUB_OUTPUT" ;;
+            *) exit 1 ;;
+          esac
+
+      - name: Initialize encrypted remote state
+        working-directory: ${{ steps.root.outputs.path }}
+        env:
+          TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
+          TF_STATE_KMS_KEY_ID: ${{ vars.TF_STATE_KMS_KEY_ID }}
+          TF_STATE_REGION: ${{ vars.TF_STATE_REGION }}
+        run: |
+          : "${TF_STATE_BUCKET:?Configure TF_STATE_BUCKET in this GitHub Environment}"
+          : "${TF_STATE_KMS_KEY_ID:?Configure TF_STATE_KMS_KEY_ID in this GitHub Environment}"
+          : "${TF_STATE_REGION:?Configure TF_STATE_REGION in this GitHub Environment}"
+          terraform init -input=false -reconfigure \
+            -backend-config="bucket=${TF_STATE_BUCKET}" \
+            -backend-config="region=${TF_STATE_REGION}" \
+            -backend-config="kms_key_id=${TF_STATE_KMS_KEY_ID}" \
+            -backend-config="encrypt=true" \
+            -backend-config="use_lockfile=true"
+          terraform validate
+
+      - name: Produce a locked, no-apply plan
+        id: plan
+        working-directory: ${{ steps.root.outputs.path }}
+        run: |
+          test -f terraform.tfvars
+          set +e
+          terraform plan -input=false -lock-timeout=5m -detailed-exitcode -out=tfplan -var-file=terraform.tfvars
+          status=$?
+          set -e
+          if [ "$status" -eq 1 ]; then exit 1; fi
+          terraform show -json tfplan > tfplan.json
+          echo "exit_code=$status" >> "$GITHUB_OUTPUT"
+
+      - name: Publish non-sensitive plan summary
+        working-directory: ${{ steps.root.outputs.path }}
+        env:
+          TARGET: ${{ inputs.environment }}
+        run: |
+          jq -r '
+            [ .resource_changes[]?.change.actions[] ]
+            | group_by(.)
+            | map({action: .[0], count: length})
+            | .[]
+            | "| \(.action) | \(.count) |"
+          ' tfplan.json > plan-counts.md
+          {
+            echo "## Terraform plan: ${TARGET}"
+            echo
+            echo "| Action | Count |"
+            echo "| --- | ---: |"
+            cat plan-counts.md
+          } >> "$GITHUB_STEP_SUMMARY"
