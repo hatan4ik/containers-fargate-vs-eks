@@ -67,15 +67,21 @@ variable "node_scaling" {
   nullable    = false
 }
 
-variable "endpoint_public_access" {
-  type        = bool
-  description = "Expose the EKS API publicly. Requires explicit CIDRs."
+variable "flow_log_kms_key_id" {
+  type        = string
+  description = "Customer-managed KMS key ARN used to encrypt VPC flow logs."
   nullable    = false
 }
 
-variable "endpoint_public_access_cidrs" {
-  type        = list(string)
-  description = "Explicit CIDRs allowed to reach the EKS public endpoint."
+variable "cluster_log_kms_key_id" {
+  type        = string
+  description = "Customer-managed KMS key ARN used to encrypt EKS control-plane logs."
+  nullable    = false
+}
+
+variable "secrets_kms_key_arn" {
+  type        = string
+  description = "Dedicated customer-managed KMS key ARN for EKS Kubernetes Secret envelope encryption."
   nullable    = false
 }
 

@@ -20,6 +20,9 @@ gateway_autoscaling = {
 
 certificate_arn    = "arn:aws:acm:us-east-1:123456789012:certificate/replace-me"
 alb_ingress_cidrs  = ["203.0.113.0/24"]
+flow_log_kms_key_id        = "arn:aws:kms:us-east-1:123456789012:key/replace-me"
+application_log_kms_key_id = "arn:aws:kms:us-east-1:123456789012:key/replace-me"
+alb_access_logs            = { bucket = "replace-with-alb-access-log-bucket", prefix = "fargate-prod" }
 https_egress_cidrs = ["10.0.0.0/8"]
 
 tags = {

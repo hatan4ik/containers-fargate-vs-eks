@@ -85,6 +85,27 @@ variable "certificate_arn" {
   nullable    = false
 }
 
+variable "flow_log_kms_key_id" {
+  type        = string
+  description = "Customer-managed KMS key ARN used to encrypt VPC flow logs."
+  nullable    = false
+}
+
+variable "application_log_kms_key_id" {
+  type        = string
+  description = "Customer-managed KMS key ARN used to encrypt application logs."
+  nullable    = false
+}
+
+variable "alb_access_logs" {
+  type = object({
+    bucket = string
+    prefix = optional(string, "alb")
+  })
+  description = "Pre-provisioned S3 destination for ALB access logs."
+  nullable    = false
+}
+
 variable "alb_ingress_cidrs" {
   type        = set(string)
   description = "CIDRs permitted to reach the production application load balancer."

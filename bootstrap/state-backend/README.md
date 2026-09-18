@@ -20,7 +20,7 @@ The GitHub repository default is derived from this repository's origin:
 
 | Name | Version |
 | ---- | ------- |
-| terraform | >= 1.6.0, < 2.0.0 |
+| terraform | >= 1.10.0, < 2.0.0 |
 | aws | ~> 6.0 |
 
 ## Providers

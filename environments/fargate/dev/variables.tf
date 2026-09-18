@@ -86,13 +86,7 @@ variable "gateway_autoscaling" {
 
 variable "certificate_arn" {
   type        = string
-  description = "Validated ACM certificate ARN. Null requires allow_insecure_http = true."
-  default     = null
-}
-
-variable "allow_insecure_http" {
-  type        = bool
-  description = "Explicitly allow HTTP-only development ingress."
+  description = "Validated ACM certificate ARN for the mandatory HTTPS listener."
   nullable    = false
 }
 
@@ -105,6 +99,27 @@ variable "alb_ingress_cidrs" {
 variable "allow_public_ingress" {
   type        = bool
   description = "Explicitly permit 0.0.0.0/0 ALB ingress."
+  nullable    = false
+}
+
+variable "flow_log_kms_key_id" {
+  type        = string
+  description = "Customer-managed KMS key ARN used to encrypt VPC flow logs."
+  nullable    = false
+}
+
+variable "application_log_kms_key_id" {
+  type        = string
+  description = "Customer-managed KMS key ARN used to encrypt application logs."
+  nullable    = false
+}
+
+variable "alb_access_logs" {
+  type = object({
+    bucket = string
+    prefix = optional(string, "alb")
+  })
+  description = "Pre-provisioned S3 destination for ALB access logs."
   nullable    = false
 }
 

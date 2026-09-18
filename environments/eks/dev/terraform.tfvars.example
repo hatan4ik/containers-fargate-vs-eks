@@ -10,8 +10,9 @@ node_instance_type      = "t3.medium"
 node_disk_size_gb       = 50
 node_scaling            = { min = 2, desired = 2, max = 5 }
 
-endpoint_public_access       = false
-endpoint_public_access_cidrs = []
+flow_log_kms_key_id    = "arn:aws:kms:us-east-1:123456789012:key/replace-me"
+cluster_log_kms_key_id = "arn:aws:kms:us-east-1:123456789012:key/replace-me"
+secrets_kms_key_arn    = "arn:aws:kms:us-east-1:123456789012:key/replace-me"
 
 tags = {
   Owner      = "platform"
