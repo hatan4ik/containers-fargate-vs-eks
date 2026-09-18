@@ -79,22 +79,14 @@ variable "node_disk_size_gb" {
   }
 }
 
-variable "endpoint_public_access" {
-  type        = bool
-  description = "Expose the Kubernetes API endpoint publicly. Requires endpoint_public_access_cidrs."
-  default     = false
-  nullable    = false
-}
-
-variable "endpoint_public_access_cidrs" {
-  type        = list(string)
-  description = "CIDRs allowed to reach the public API endpoint. Required when endpoint_public_access = true."
-  default     = []
+variable "secrets_kms_key_arn" {
+  type        = string
+  description = "Dedicated customer-managed KMS key ARN for EKS Kubernetes Secret envelope encryption. Do not reuse the Terraform state key."
   nullable    = false
 
   validation {
-    condition     = alltrue([for c in var.endpoint_public_access_cidrs : can(cidrnetmask(c))])
-    error_message = "endpoint_public_access_cidrs must contain valid CIDR blocks."
+    condition     = can(regex("^arn:[^:]+:kms:[^:]+:[0-9]{12}:key/.+$", var.secrets_kms_key_arn))
+    error_message = "secrets_kms_key_arn must be a KMS key ARN, not an alias or key ID."
   }
 }
 

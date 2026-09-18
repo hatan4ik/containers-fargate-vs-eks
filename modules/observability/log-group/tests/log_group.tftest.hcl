@@ -12,7 +12,8 @@ run "minimal_log_group" {
   command = plan
 
   variables {
-    name = "/example-dev/apps"
+    name       = "/example-dev/apps"
+    kms_key_id = "arn:aws:kms:us-east-1:123456789012:key/11111111-1111-1111-1111-111111111111"
   }
 
   assert {
@@ -27,6 +28,7 @@ run "invalid_retention_rejected" {
   variables {
     name           = "/example-dev/apps"
     retention_days = 2
+    kms_key_id     = "arn:aws:kms:us-east-1:123456789012:key/11111111-1111-1111-1111-111111111111"
   }
 
   expect_failures = [var.retention_days]

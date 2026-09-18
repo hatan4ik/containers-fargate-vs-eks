@@ -54,27 +54,32 @@ variable "flow_log_role_name" {
 variable "flow_log_retention_days" {
   type        = number
   description = "VPC flow-log retention in days."
-  default     = 30
+  default     = 365
+  nullable    = false
+}
+
+variable "flow_log_kms_key_id" {
+  type        = string
+  description = "Customer-managed KMS key ARN used to encrypt VPC flow logs."
   nullable    = false
 }
 
 variable "application_log_retention_days" {
   type        = number
   description = "Application log retention in days."
-  default     = 30
+  default     = 365
+  nullable    = false
+}
+
+variable "application_log_kms_key_id" {
+  type        = string
+  description = "Customer-managed KMS key ARN used to encrypt application logs."
   nullable    = false
 }
 
 variable "certificate_arn" {
   type        = string
-  description = "Validated ACM certificate ARN for ALB HTTPS. Null requires explicit HTTP-only opt-in."
-  default     = null
-}
-
-variable "allow_insecure_http" {
-  type        = bool
-  description = "Explicitly permit HTTP-only ingress when no certificate is available."
-  default     = false
+  description = "Validated ACM certificate ARN for the mandatory ALB HTTPS listener."
   nullable    = false
 }
 
@@ -89,6 +94,22 @@ variable "allow_public_ingress" {
   type        = bool
   description = "Explicitly allow 0.0.0.0/0 ALB ingress."
   default     = false
+  nullable    = false
+}
+
+variable "alb_access_logs" {
+  type = object({
+    bucket = string
+    prefix = optional(string, "alb")
+  })
+  description = "Pre-provisioned S3 destination for ALB access logs."
+  nullable    = false
+}
+
+variable "enable_deletion_protection" {
+  type        = bool
+  description = "Prevent accidental ALB deletion."
+  default     = true
   nullable    = false
 }
 

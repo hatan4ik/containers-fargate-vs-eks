@@ -12,9 +12,10 @@ provider "aws" {
 run "minimal_config" {
   command = plan
   variables {
-    name               = "test-vpc"
-    cidr               = "10.200.0.0/16"
-    availability_zones = ["us-east-1a", "us-east-1b"]
+    name                = "test-vpc"
+    cidr                = "10.200.0.0/16"
+    availability_zones  = ["us-east-1a", "us-east-1b"]
+    flow_log_kms_key_id = "arn:aws:kms:us-east-1:123456789012:key/11111111-1111-1111-1111-111111111111"
   }
 
   assert {
@@ -37,10 +38,11 @@ run "minimal_config" {
 run "three_az_config" {
   command = plan
   variables {
-    name               = "test-vpc-3az"
-    cidr               = "10.201.0.0/16"
-    availability_zones = ["us-east-1a", "us-east-1b", "us-east-1c"]
-    single_nat_gateway = true
+    name                = "test-vpc-3az"
+    cidr                = "10.201.0.0/16"
+    availability_zones  = ["us-east-1a", "us-east-1b", "us-east-1c"]
+    single_nat_gateway  = true
+    flow_log_kms_key_id = "arn:aws:kms:us-east-1:123456789012:key/11111111-1111-1111-1111-111111111111"
   }
 
   assert {
@@ -53,9 +55,10 @@ run "three_az_config" {
 run "invalid_cidr_rejected" {
   command = plan
   variables {
-    name               = "test-vpc"
-    cidr               = "not-a-cidr"
-    availability_zones = ["us-east-1a", "us-east-1b"]
+    name                = "test-vpc"
+    cidr                = "not-a-cidr"
+    availability_zones  = ["us-east-1a", "us-east-1b"]
+    flow_log_kms_key_id = "arn:aws:kms:us-east-1:123456789012:key/11111111-1111-1111-1111-111111111111"
   }
 
   expect_failures = [var.cidr]
@@ -65,9 +68,10 @@ run "invalid_cidr_rejected" {
 run "too_few_azs_rejected" {
   command = plan
   variables {
-    name               = "test-vpc"
-    cidr               = "10.202.0.0/16"
-    availability_zones = ["us-east-1a"]
+    name                = "test-vpc"
+    cidr                = "10.202.0.0/16"
+    availability_zones  = ["us-east-1a"]
+    flow_log_kms_key_id = "arn:aws:kms:us-east-1:123456789012:key/11111111-1111-1111-1111-111111111111"
   }
 
   expect_failures = [var.availability_zones]

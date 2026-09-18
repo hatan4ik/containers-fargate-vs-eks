@@ -31,9 +31,9 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 | ---- | ----------- | ---- | ------- | :------: |
+| kms\_key\_id | Customer-managed KMS key ARN for CloudWatch Logs encryption. The key policy must permit the regional CloudWatch Logs service. | `string` | n/a | yes |
 | name | CloudWatch log group name (full path, e.g. /z2h/dev/apps). | `string` | n/a | yes |
-| kms\_key\_id | Optional KMS key ARN for CloudWatch Logs encryption. Null uses the AWS-managed default. | `string` | `null` | no |
-| retention\_days | Log retention in days. | `number` | `14` | no |
+| retention\_days | Log retention in days. | `number` | `365` | no |
 | tags | Tags to apply to the log group. | `map(string)` | `{}` | no |
 
 ## Outputs

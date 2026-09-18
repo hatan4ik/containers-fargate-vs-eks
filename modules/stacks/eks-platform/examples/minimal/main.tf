@@ -9,7 +9,10 @@ provider "aws" {
 module "platform" {
   source = "../.."
 
-  name               = "example-dev"
-  vpc_cidr           = "10.50.0.0/16"
-  availability_zones = ["us-east-1a", "us-east-1b"]
+  name                   = "example-dev"
+  vpc_cidr               = "10.50.0.0/16"
+  availability_zones     = ["us-east-1a", "us-east-1b"]
+  flow_log_kms_key_id    = "arn:aws:kms:us-east-1:123456789012:key/replace-me"
+  cluster_log_kms_key_id = "arn:aws:kms:us-east-1:123456789012:key/replace-me"
+  secrets_kms_key_arn    = "arn:aws:kms:us-east-1:123456789012:key/replace-me"
 }

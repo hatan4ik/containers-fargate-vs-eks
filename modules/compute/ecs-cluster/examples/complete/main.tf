@@ -16,6 +16,9 @@ module "ecs_cluster" {
   certificate_arn    = "arn:aws:acm:us-east-1:123456789012:certificate/replace-me"
   alb_ingress_cidrs  = ["203.0.113.0/24"]
   container_insights = true
+  alb_access_logs = {
+    bucket = "replace-with-alb-access-log-bucket"
+  }
   tags = {
     Environment = "prod"
     Owner       = "platform"

@@ -48,14 +48,26 @@ variable "flow_log_role_name" {
 variable "flow_log_retention_days" {
   type        = number
   description = "VPC flow-log retention in days."
-  default     = 30
+  default     = 365
+  nullable    = false
+}
+
+variable "flow_log_kms_key_id" {
+  type        = string
+  description = "Customer-managed KMS key ARN used to encrypt VPC flow logs."
   nullable    = false
 }
 
 variable "cluster_log_retention_days" {
   type        = number
   description = "EKS control-plane log retention in days."
-  default     = 30
+  default     = 365
+  nullable    = false
+}
+
+variable "cluster_log_kms_key_id" {
+  type        = string
+  description = "Customer-managed KMS key ARN used to encrypt EKS control-plane logs."
   nullable    = false
 }
 
@@ -91,17 +103,9 @@ variable "node_scaling" {
   nullable    = false
 }
 
-variable "endpoint_public_access" {
-  type        = bool
-  description = "Expose the Kubernetes API publicly. Requires explicit CIDRs."
-  default     = false
-  nullable    = false
-}
-
-variable "endpoint_public_access_cidrs" {
-  type        = list(string)
-  description = "Explicit CIDRs allowed to reach the EKS public endpoint."
-  default     = []
+variable "secrets_kms_key_arn" {
+  type        = string
+  description = "Dedicated customer-managed KMS key ARN for Kubernetes Secret envelope encryption."
   nullable    = false
 }
 

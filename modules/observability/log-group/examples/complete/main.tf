@@ -10,7 +10,7 @@ module "log_group" {
   source = "../.."
 
   name           = "/example-prod/apps"
-  retention_days = 90
+  retention_days = 365
   kms_key_id     = "arn:aws:kms:us-east-1:123456789012:key/replace-me"
   tags = {
     Environment = "prod"

@@ -9,5 +9,6 @@ provider "aws" {
 module "log_group" {
   source = "../.."
 
-  name = "/example-dev/apps"
+  name       = "/example-dev/apps"
+  kms_key_id = "arn:aws:kms:us-east-1:123456789012:key/replace-me"
 }

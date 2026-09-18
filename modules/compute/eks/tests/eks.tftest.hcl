@@ -12,9 +12,10 @@ run "private_endpoint_plan" {
   command = plan
 
   variables {
-    name               = "test-eks"
-    public_subnet_ids  = ["subnet-00000000000000001", "subnet-00000000000000002"]
-    private_subnet_ids = ["subnet-00000000000000003", "subnet-00000000000000004"]
+    name                = "test-eks"
+    public_subnet_ids   = ["subnet-00000000000000001", "subnet-00000000000000002"]
+    private_subnet_ids  = ["subnet-00000000000000003", "subnet-00000000000000004"]
+    secrets_kms_key_arn = "arn:aws:kms:us-east-1:123456789012:key/11111111-1111-1111-1111-111111111111"
   }
 
   assert {
@@ -23,28 +24,28 @@ run "private_endpoint_plan" {
   }
 }
 
-run "public_endpoint_requires_cidrs" {
+run "invalid_secrets_key_rejected" {
   command = plan
 
   variables {
-    name                         = "test-eks"
-    public_subnet_ids            = ["subnet-00000000000000001", "subnet-00000000000000002"]
-    private_subnet_ids           = ["subnet-00000000000000003", "subnet-00000000000000004"]
-    endpoint_public_access       = true
-    endpoint_public_access_cidrs = []
+    name                = "test-eks"
+    public_subnet_ids   = ["subnet-00000000000000001", "subnet-00000000000000002"]
+    private_subnet_ids  = ["subnet-00000000000000003", "subnet-00000000000000004"]
+    secrets_kms_key_arn = "not-a-kms-key"
   }
 
-  expect_failures = [aws_eks_cluster.this]
+  expect_failures = [var.secrets_kms_key_arn]
 }
 
 run "invalid_node_disk_rejected" {
   command = plan
 
   variables {
-    name               = "test-eks"
-    public_subnet_ids  = ["subnet-00000000000000001", "subnet-00000000000000002"]
-    private_subnet_ids = ["subnet-00000000000000003", "subnet-00000000000000004"]
-    node_disk_size_gb  = 10
+    name                = "test-eks"
+    public_subnet_ids   = ["subnet-00000000000000001", "subnet-00000000000000002"]
+    private_subnet_ids  = ["subnet-00000000000000003", "subnet-00000000000000004"]
+    node_disk_size_gb   = 10
+    secrets_kms_key_arn = "arn:aws:kms:us-east-1:123456789012:key/11111111-1111-1111-1111-111111111111"
   }
 
   expect_failures = [var.node_disk_size_gb]

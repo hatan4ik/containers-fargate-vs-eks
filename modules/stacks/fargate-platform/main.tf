@@ -8,6 +8,7 @@ module "vpc" {
   flow_log_group_name     = var.flow_log_group_name
   flow_log_role_name      = var.flow_log_role_name
   flow_log_retention_days = var.flow_log_retention_days
+  flow_log_kms_key_id     = var.flow_log_kms_key_id
   tags                    = local.tags
 }
 
@@ -16,21 +17,23 @@ module "application_logs" {
 
   name           = "/${var.name}/apps"
   retention_days = var.application_log_retention_days
+  kms_key_id     = var.application_log_kms_key_id
   tags           = local.tags
 }
 
 module "cluster" {
   source = "../../compute/ecs-cluster"
 
-  name                 = var.name
-  vpc_id               = module.vpc.vpc_id
-  vpc_cidr             = var.vpc_cidr
-  public_subnet_ids    = module.vpc.public_subnet_id_list
-  certificate_arn      = var.certificate_arn
-  allow_insecure_http  = var.allow_insecure_http
-  alb_ingress_cidrs    = var.alb_ingress_cidrs
-  allow_public_ingress = var.allow_public_ingress
-  tags                 = local.tags
+  name                       = var.name
+  vpc_id                     = module.vpc.vpc_id
+  vpc_cidr                   = var.vpc_cidr
+  public_subnet_ids          = module.vpc.public_subnet_id_list
+  certificate_arn            = var.certificate_arn
+  alb_ingress_cidrs          = var.alb_ingress_cidrs
+  allow_public_ingress       = var.allow_public_ingress
+  alb_access_logs            = var.alb_access_logs
+  enable_deletion_protection = var.enable_deletion_protection
+  tags                       = local.tags
 }
 
 module "gateway" {

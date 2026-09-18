@@ -29,17 +29,17 @@ resource "aws_eks_cluster" "this" {
   vpc_config {
     subnet_ids              = concat(var.public_subnet_ids, var.private_subnet_ids)
     endpoint_private_access = true
-    endpoint_public_access  = var.endpoint_public_access
-    public_access_cidrs     = var.endpoint_public_access_cidrs
+    endpoint_public_access  = false
+    public_access_cidrs     = []
   }
 
   enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
 
-  lifecycle {
-    precondition {
-      condition     = !var.endpoint_public_access || length(var.endpoint_public_access_cidrs) > 0
-      error_message = "A public EKS API endpoint requires at least one explicitly allow-listed CIDR."
+  encryption_config {
+    provider {
+      key_arn = var.secrets_kms_key_arn
     }
+    resources = ["secrets"]
   }
 
   depends_on = [aws_iam_role_policy_attachment.cluster_policy]

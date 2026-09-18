@@ -38,12 +38,23 @@ variable "single_nat_gateway" {
 variable "flow_log_retention_days" {
   type        = number
   description = "CloudWatch log retention in days for VPC flow logs."
-  default     = 30
+  default     = 365
   nullable    = false
 
   validation {
-    condition     = contains([1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1096, 1827, 2192, 2557, 2922, 3288, 3653], var.flow_log_retention_days)
-    error_message = "flow_log_retention_days must be a value accepted by CloudWatch Logs."
+    condition     = var.flow_log_retention_days >= 365 && contains([365, 400, 545, 731, 1096, 1827, 2192, 2557, 2922, 3288, 3653], var.flow_log_retention_days)
+    error_message = "flow_log_retention_days must be an accepted CloudWatch Logs value of at least 365 days."
+  }
+}
+
+variable "flow_log_kms_key_id" {
+  type        = string
+  description = "Customer-managed KMS key ARN used to encrypt VPC flow logs. Use a key policy that permits the regional CloudWatch Logs service."
+  nullable    = false
+
+  validation {
+    condition     = can(regex("^arn:[^:]+:kms:[^:]+:[0-9]{12}:key/.+$", var.flow_log_kms_key_id))
+    error_message = "flow_log_kms_key_id must be a KMS key ARN, not an alias or key ID."
   }
 }
 

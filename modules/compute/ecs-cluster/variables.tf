@@ -36,15 +36,13 @@ variable "public_subnet_ids" {
 
 variable "certificate_arn" {
   type        = string
-  description = "ACM certificate ARN for HTTPS on the ALB. When provided, port 80 redirects to 443."
-  default     = null
-}
-
-variable "allow_insecure_http" {
-  type        = bool
-  description = "Explicitly permit HTTP-only ALB traffic when no certificate is provided. Keep false for production."
-  default     = false
+  description = "ACM certificate ARN for the mandatory TLS listener on the ALB."
   nullable    = false
+
+  validation {
+    condition     = can(regex("^arn:[^:]+:acm:[^:]+:[0-9]{12}:certificate/.+$", var.certificate_arn))
+    error_message = "certificate_arn must be an ACM certificate ARN."
+  }
 }
 
 variable "alb_ingress_cidrs" {
@@ -63,6 +61,27 @@ variable "allow_public_ingress" {
   type        = bool
   description = "Explicitly permit 0.0.0.0/0 ALB ingress. Keep false unless a public internet-facing endpoint is required."
   default     = false
+  nullable    = false
+}
+
+variable "alb_access_logs" {
+  type = object({
+    bucket = string
+    prefix = optional(string, "alb")
+  })
+  description = "Pre-provisioned S3 bucket and prefix for ALB access logs. The bucket policy must allow the ALB log-delivery service for this account and region."
+  nullable    = false
+
+  validation {
+    condition     = can(regex("^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$", var.alb_access_logs.bucket))
+    error_message = "alb_access_logs.bucket must be a valid S3 bucket name."
+  }
+}
+
+variable "enable_deletion_protection" {
+  type        = bool
+  description = "Protect the ALB from accidental deletion. Keep true in every persistent environment."
+  default     = true
   nullable    = false
 }
 

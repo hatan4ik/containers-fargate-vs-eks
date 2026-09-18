@@ -14,24 +14,13 @@ resource "aws_ecs_cluster" "this" {
 
 resource "aws_security_group" "alb" {
   name        = "${var.name}-alb-sg"
-  description = "ALB: public HTTP(S) ingress, egress to gateway tasks only"
+  description = "ALB: HTTPS ingress, egress to gateway tasks only"
   vpc_id      = var.vpc_id
   tags        = merge(local.tags, { Name = "${var.name}-alb-sg" })
 }
 
-resource "aws_vpc_security_group_ingress_rule" "alb_http" {
-  for_each = var.alb_ingress_cidrs
-
-  security_group_id = aws_security_group.alb.id
-  description       = "HTTP ingress from ${each.value}"
-  from_port         = 80
-  to_port           = 80
-  ip_protocol       = "tcp"
-  cidr_ipv4         = each.value
-}
-
 resource "aws_vpc_security_group_ingress_rule" "alb_https" {
-  for_each          = local.https_enabled ? var.alb_ingress_cidrs : toset([])
+  for_each          = var.alb_ingress_cidrs
   security_group_id = aws_security_group.alb.id
   description       = "HTTPS ingress from ${each.value}"
   from_port         = 443
@@ -57,15 +46,17 @@ resource "aws_lb" "this" {
   subnets                    = var.public_subnet_ids
   security_groups            = [aws_security_group.alb.id]
   drop_invalid_header_fields = true
+  enable_deletion_protection = var.enable_deletion_protection
   idle_timeout               = 60
   tags                       = local.tags
 
-  lifecycle {
-    precondition {
-      condition     = var.certificate_arn != null || var.allow_insecure_http
-      error_message = "certificate_arn is required unless allow_insecure_http is explicitly true."
-    }
+  access_logs {
+    bucket  = var.alb_access_logs.bucket
+    prefix  = var.alb_access_logs.prefix
+    enabled = true
+  }
 
+  lifecycle {
     precondition {
       condition     = var.allow_public_ingress || !contains(tolist(var.alb_ingress_cidrs), "0.0.0.0/0")
       error_message = "0.0.0.0/0 ingress requires allow_public_ingress = true."
@@ -91,41 +82,12 @@ resource "aws_lb_target_group" "gateway" {
   }
 }
 
-# HTTP listener: redirect to HTTPS when cert is available, otherwise forward.
-resource "aws_lb_listener" "http" {
-  load_balancer_arn = aws_lb.this.arn
-  port              = 80
-  protocol          = "HTTP"
-  tags              = local.tags
-
-  dynamic "default_action" {
-    for_each = local.https_enabled ? [1] : []
-    content {
-      type = "redirect"
-      redirect {
-        port        = "443"
-        protocol    = "HTTPS"
-        status_code = "HTTP_301"
-      }
-    }
-  }
-
-  dynamic "default_action" {
-    for_each = local.https_enabled ? [] : [1]
-    content {
-      type             = "forward"
-      target_group_arn = aws_lb_target_group.gateway.arn
-    }
-  }
-}
-
 resource "aws_lb_listener" "https" {
-  count             = local.https_enabled ? 1 : 0
   load_balancer_arn = aws_lb.this.arn
   port              = 443
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
-  certificate_arn   = local.effective_cert_arn
+  certificate_arn   = var.certificate_arn
   tags              = local.tags
 
   default_action {

@@ -1,0 +1,5 @@
+# The labs are intentionally isolated teaching examples. Production IaC lives in
+# bootstrap/, modules/, and environments/ and is scanned on every relevant change.
+skip-path:
+  - labs
+  - node_modules

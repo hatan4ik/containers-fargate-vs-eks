@@ -51,10 +51,11 @@ No modules.
 | ---- | ----------- | ---- | ------- | :------: |
 | availability\_zones | Explicit list of AZ names to use (e.g. ["us-east-1a","us-east-1b"]). Length must be 2 or 3. | `list(string)` | n/a | yes |
 | cidr | IPv4 CIDR block for the VPC (e.g. 10.40.0.0/16). | `string` | n/a | yes |
+| flow\_log\_kms\_key\_id | Customer-managed KMS key ARN used to encrypt VPC flow logs. Use a key policy that permits the regional CloudWatch Logs service. | `string` | n/a | yes |
 | name | Name prefix applied to every resource in this module. | `string` | n/a | yes |
 | eks\_subnet\_tags | When true, add kubernetes.io/role/elb and kubernetes.io/role/internal-elb tags to subnets (required for EKS load-balancer controllers). | `bool` | `false` | no |
 | flow\_log\_group\_name | Existing-compatible VPC flow-log group name. Null derives /<name>/vpc-flow-logs. | `string` | `null` | no |
-| flow\_log\_retention\_days | CloudWatch log retention in days for VPC flow logs. | `number` | `30` | no |
+| flow\_log\_retention\_days | CloudWatch log retention in days for VPC flow logs. | `number` | `365` | no |
 | flow\_log\_role\_name | Existing-compatible VPC flow-log IAM role name. Null derives <name>-vpc-flow-logs. | `string` | `null` | no |
 | single\_nat\_gateway | Use one NAT gateway (cost saving) instead of one per AZ (fault tolerant). | `bool` | `false` | no |
 | tags | Additional tags merged onto every resource. | `map(string)` | `{}` | no |

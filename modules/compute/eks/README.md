@@ -50,8 +50,7 @@ No modules.
 | name | Name prefix for all resources. | `string` | n/a | yes |
 | private\_subnet\_ids | Private subnet IDs for node groups (tagged kubernetes.io/role/internal-elb=1). | `list(string)` | n/a | yes |
 | public\_subnet\_ids | Public subnet IDs (tagged kubernetes.io/role/elb=1 by the vpc module). | `list(string)` | n/a | yes |
-| endpoint\_public\_access | Expose the Kubernetes API endpoint publicly. Requires endpoint\_public\_access\_cidrs. | `bool` | `false` | no |
-| endpoint\_public\_access\_cidrs | CIDRs allowed to reach the public API endpoint. Required when endpoint\_public\_access = true. | `list(string)` | `[]` | no |
+| secrets\_kms\_key\_arn | Dedicated customer-managed KMS key ARN for EKS Kubernetes Secret envelope encryption. Do not reuse the Terraform state key. | `string` | n/a | yes |
 | kubernetes\_version | EKS Kubernetes version (e.g. "1.30"). | `string` | `"1.30"` | no |
 | node\_disk\_size\_gb | Root EBS volume size in GiB for each node. | `number` | `50` | no |
 | node\_instance\_type | EC2 instance type for the default node group. | `string` | `"t3.medium"` | no |

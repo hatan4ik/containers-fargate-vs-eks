@@ -13,11 +13,13 @@ resource "aws_internet_gateway" "igw" {
 # ── Subnets (for_each on AZ name — stable keys) ──────────────────────────────
 
 resource "aws_subnet" "public" {
-  for_each                = local.az_keys
-  vpc_id                  = aws_vpc.this.id
-  cidr_block              = local.az_public_cidrs[each.key]
-  availability_zone       = each.key
-  map_public_ip_on_launch = true
+  for_each          = local.az_keys
+  vpc_id            = aws_vpc.this.id
+  cidr_block        = local.az_public_cidrs[each.key]
+  availability_zone = each.key
+  # Public routing is for load balancers and NAT gateways. Workloads must
+  # explicitly request an address; this module never assigns public IPv4s.
+  map_public_ip_on_launch = false
   tags = merge(local.tags, {
     Name = "${var.name}-public-${each.key}"
   }, local.public_subnet_tags)
@@ -93,6 +95,7 @@ resource "aws_route_table_association" "private" {
 resource "aws_cloudwatch_log_group" "vpc_flow" {
   name              = local.flow_log_group_name
   retention_in_days = var.flow_log_retention_days
+  kms_key_id        = var.flow_log_kms_key_id
   tags              = merge(local.tags, { Name = "${var.name}-vpc-flow-logs" })
 }
 

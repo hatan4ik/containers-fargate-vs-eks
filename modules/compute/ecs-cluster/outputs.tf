@@ -33,14 +33,9 @@ output "gateway_target_group_arn" {
   value       = aws_lb_target_group.gateway.arn
 }
 
-output "http_listener_arn" {
-  description = "HTTP listener ARN."
-  value       = aws_lb_listener.http.arn
-}
-
 output "https_listener_arn" {
-  description = "HTTPS listener ARN. Null when no certificate is configured."
-  value       = try(aws_lb_listener.https[0].arn, null)
+  description = "Mandatory HTTPS listener ARN."
+  value       = aws_lb_listener.https.arn
 }
 
 output "task_execution_role_arn" {
@@ -64,6 +59,6 @@ output "service_discovery_namespace_name" {
 }
 
 output "acm_certificate_arn" {
-  description = "Provided ACM certificate ARN in use. Null when explicitly HTTP-only."
-  value       = local.effective_cert_arn
+  description = "ACM certificate ARN used by the mandatory HTTPS listener."
+  value       = var.certificate_arn
 }
