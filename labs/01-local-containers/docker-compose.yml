@@ -1,6 +1,8 @@
 services:
   users:
-    build: ../../services/users
+    build:
+      context: ../..
+      dockerfile: services/users/Dockerfile
     environment:
       - PORT=3001
       - LOG_LEVEL=info
@@ -8,7 +10,9 @@ services:
       - "3001:3001"
 
   orders:
-    build: ../../services/orders
+    build:
+      context: ../..
+      dockerfile: services/orders/Dockerfile
     environment:
       - PORT=3002
       - LOG_LEVEL=info
@@ -19,7 +23,9 @@ services:
       - users
 
   gateway:
-    build: ../../services/gateway
+    build:
+      context: ../..
+      dockerfile: services/gateway/Dockerfile
     environment:
       - PORT=3000
       - LOG_LEVEL=info

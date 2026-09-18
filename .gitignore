@@ -30,6 +30,7 @@ crash.*.log
 # OS/editor cruft
 .DS_Store
 Thumbs.db
+United-Business-Trip-2.html
 .vscode/
 .idea/
 *.swp

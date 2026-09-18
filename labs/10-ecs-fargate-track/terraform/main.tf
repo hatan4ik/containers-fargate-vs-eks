@@ -10,9 +10,13 @@ provider "aws" {
 }
 
 module "vpc" {
-  source = "./modules/vpc"
-  name   = var.name
-  cidr   = var.vpc_cidr
+  source                  = "./modules/vpc"
+  name                    = var.name
+  cidr                    = var.vpc_cidr
+  flow_log_group_name     = "/${var.name}/fargate-vpc-flow-logs"
+  flow_log_role_name      = "${var.name}-fargate-vpc-flow-logs"
+  single_nat_gateway      = var.single_nat_gateway
+  availability_zone_count = var.availability_zone_count
 }
 
 module "observability" {
@@ -25,6 +29,7 @@ module "ecs" {
   name   = var.name
 
   vpc_id             = module.vpc.vpc_id
+  vpc_cidr           = var.vpc_cidr
   public_subnet_ids  = module.vpc.public_subnet_ids
   private_subnet_ids = module.vpc.private_subnet_ids
 

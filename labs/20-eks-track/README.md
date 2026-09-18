@@ -2,13 +2,14 @@
 
 **PREREQUISITE**: complete `labs/00-setup` before starting this track.
 
-Goal: provision EKS via Terraform, deploy services via K8s manifests, and (optional) install Istio.
+Goal: provision a private-by-default EKS cluster with Terraform and deploy the
+services through a validated Kustomize render.
 
 ## Steps
-1) Build + push images to ECR
-2) Provision EKS: `terraform/`
-3) Configure kubectl (terraform outputs show cluster name/region)
-4) Deploy manifests: `k8s/base`
-5) Optional: install addons via Helm (metrics-server, ALB controller, Istio)
+
+1. Build and push a `sha-<commit-sha>` image set to ECR.
+2. Provision EKS: `terraform/`.
+3. Configure `kubectl` from a management environment connected to the cluster VPC.
+4. Render and deploy manifests with `scripts/deploy.sh`.
 
 See `runbooks/deploy.md`.

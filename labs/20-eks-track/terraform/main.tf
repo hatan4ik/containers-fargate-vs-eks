@@ -2,8 +2,6 @@ terraform {
   required_version = ">= 1.6.0"
   required_providers {
     aws = { source = "hashicorp/aws", version = ">= 5.0" }
-    kubernetes = { source = "hashicorp/kubernetes", version = ">= 2.25" }
-    helm = { source = "hashicorp/helm", version = ">= 2.12" }
   }
 }
 
@@ -12,46 +10,30 @@ provider "aws" {
 }
 
 module "vpc" {
-  source = "./modules/vpc"
-  name   = var.name
-  cidr   = var.vpc_cidr
+  source                  = "./modules/vpc"
+  name                    = var.name
+  cidr                    = var.vpc_cidr
+  flow_log_group_name     = "/${var.name}/eks-vpc-flow-logs"
+  flow_log_role_name      = "${var.name}-eks-vpc-flow-logs"
+  single_nat_gateway      = var.single_nat_gateway
+  availability_zone_count = var.availability_zone_count
 }
 
 module "observability" {
-  source = "./modules/observability"
-  name   = var.name
+  source       = "./modules/observability"
+  name         = var.name
+  cluster_name = "${var.name}-eks"
 }
 
 module "eks" {
   source = "./modules/eks"
 
   name               = var.name
-  vpc_id             = module.vpc.vpc_id
   public_subnet_ids  = module.vpc.public_subnet_ids
   private_subnet_ids = module.vpc.private_subnet_ids
 
-  enable_helm_addons = var.enable_helm_addons
-  enable_istio       = var.enable_istio
-}
+  endpoint_public_access       = var.endpoint_public_access
+  endpoint_public_access_cidrs = var.endpoint_public_access_cidrs
 
-# Configure k8s/helm providers after cluster exists
-data "aws_eks_cluster" "this" {
-  name = module.eks.cluster_name
-}
-data "aws_eks_cluster_auth" "this" {
-  name = module.eks.cluster_name
-}
-
-provider "kubernetes" {
-  host                   = data.aws_eks_cluster.this.endpoint
-  cluster_ca_certificate = base64decode(data.aws_eks_cluster.this.certificate_authority[0].data)
-  token                  = data.aws_eks_cluster_auth.this.token
-}
-
-provider "helm" {
-  kubernetes {
-    host                   = data.aws_eks_cluster.this.endpoint
-    cluster_ca_certificate = base64decode(data.aws_eks_cluster.this.certificate_authority[0].data)
-    token                  = data.aws_eks_cluster_auth.this.token
-  }
+  depends_on = [module.observability]
 }

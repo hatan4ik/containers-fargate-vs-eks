@@ -7,6 +7,18 @@ on:
         description: "ecs or eks"
         required: true
         default: "ecs"
+        type: choice
+        options: [ecs, eks]
+      image_tag:
+        description: "Required for ECS: immutable sha-<40 hex> tag built by the image workflow"
+        required: false
+        type: string
+      confirm_apply:
+        description: "Set to true after reviewing the intended environment and image tag"
+        required: true
+        default: "false"
+        type: choice
+        options: ["false", "true"]
 
 permissions:
   id-token: write
@@ -14,10 +26,17 @@ permissions:
 
 env:
   AWS_REGION: ${{ vars.AWS_REGION }}
+  ECR_REGISTRY: ${{ vars.ECR_REGISTRY }}
+  IMAGE_TAG: ${{ inputs.image_tag }}
 
 jobs:
   apply:
+    if: ${{ inputs.confirm_apply == 'true' }}
     runs-on: ubuntu-latest
+    environment: production
+    concurrency:
+      group: terraform-${{ inputs.track }}
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
 
@@ -30,15 +49,21 @@ jobs:
       - uses: hashicorp/setup-terraform@v3
 
       - name: Terraform apply (ECS)
-        if: ${{ github.event.inputs.track == 'ecs' }}
+        if: ${{ inputs.track == 'ecs' }}
         working-directory: labs/10-ecs-fargate-track/terraform
         run: |
-          terraform init
-          terraform apply -auto-approve             -var "image_gateway=${{ vars.ECR_REGISTRY }}/gateway:main"             -var "image_users=${{ vars.ECR_REGISTRY }}/users:main"             -var "image_orders=${{ vars.ECR_REGISTRY }}/orders:main"
+          printf '%s\n' "$IMAGE_TAG" | grep -Eq '^sha-[0-9a-f]{40}$'
+          terraform init -lockfile=readonly
+          terraform plan -out=tfplan \
+            -var "image_gateway=${ECR_REGISTRY}/gateway:${IMAGE_TAG}" \
+            -var "image_users=${ECR_REGISTRY}/users:${IMAGE_TAG}" \
+            -var "image_orders=${ECR_REGISTRY}/orders:${IMAGE_TAG}"
+          terraform apply -auto-approve tfplan
 
       - name: Terraform apply (EKS)
-        if: ${{ github.event.inputs.track == 'eks' }}
+        if: ${{ inputs.track == 'eks' }}
         working-directory: labs/20-eks-track/terraform
         run: |
-          terraform init
-          terraform apply -auto-approve
+          terraform init -lockfile=readonly
+          terraform plan -out=tfplan
+          terraform apply -auto-approve tfplan

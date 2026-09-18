@@ -1,11 +1,11 @@
 terraform {
+  required_version = ">= 1.6.0"
   required_providers {
     aws = { source = "hashicorp/aws", version = ">= 5.0" }
   }
 }
 
 data "aws_region" "current" {}
-data "aws_caller_identity" "current" {}
 
 resource "aws_ecs_cluster" "this" {
   name = "${var.name}-cluster"
@@ -25,39 +25,138 @@ resource "aws_security_group" "alb" {
   }
 
   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    from_port   = 3000
+    to_port     = 3000
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
   }
 }
 
-# Service SG: allow traffic only from ALB SG
-resource "aws_security_group" "svc" {
-  name        = "${var.name}-svc-sg"
-  description = "Service SG"
+# Each service has its own security group. This preserves the intended call graph:
+# ALB -> gateway -> orders -> users, while retaining egress for DNS, ECR, and logs.
+resource "aws_security_group" "gateway" {
+  name        = "${var.name}-gateway-sg"
+  description = "Gateway task security group"
   vpc_id      = var.vpc_id
 
   ingress {
     from_port       = 3000
-    to_port         = 3002
+    to_port         = 3000
     protocol        = "tcp"
     security_groups = [aws_security_group.alb.id]
   }
 
   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
+    from_port   = 3002
+    to_port     = 3002
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  egress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 53
+    to_port     = 53
+    protocol    = "udp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  egress {
+    from_port   = 53
+    to_port     = 53
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+}
+
+resource "aws_security_group" "orders" {
+  name        = "${var.name}-orders-sg"
+  description = "Orders task security group"
+  vpc_id      = var.vpc_id
+
+  ingress {
+    from_port       = 3002
+    to_port         = 3002
+    protocol        = "tcp"
+    security_groups = [aws_security_group.gateway.id]
+  }
+
+  egress {
+    from_port   = 3001
+    to_port     = 3001
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  egress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 53
+    to_port     = 53
+    protocol    = "udp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  egress {
+    from_port   = 53
+    to_port     = 53
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+}
+
+resource "aws_security_group" "users" {
+  name        = "${var.name}-users-sg"
+  description = "Users task security group"
+  vpc_id      = var.vpc_id
+
+  ingress {
+    from_port       = 3001
+    to_port         = 3001
+    protocol        = "tcp"
+    security_groups = [aws_security_group.orders.id]
+  }
+
+  egress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 53
+    to_port     = 53
+    protocol    = "udp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  egress {
+    from_port   = 53
+    to_port     = 53
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
   }
 }
 
 resource "aws_lb" "this" {
-  name               = "${var.name}-alb"
-  load_balancer_type = "application"
-  subnets            = var.public_subnet_ids
-  security_groups    = [aws_security_group.alb.id]
+  name                       = "${var.name}-alb"
+  load_balancer_type         = "application"
+  subnets                    = var.public_subnet_ids
+  security_groups            = [aws_security_group.alb.id]
+  drop_invalid_header_fields = true
+  idle_timeout               = 60
 }
 
 resource "aws_lb_target_group" "gateway" {
@@ -114,21 +213,22 @@ resource "aws_iam_role" "task" {
   assume_role_policy = data.aws_iam_policy_document.ecs_task_assume.json
 }
 
-# Allow logging explicitly (task execution role already covers, but keep baseline simple)
-data "aws_iam_policy_document" "task_policy" {
+data "aws_iam_policy_document" "task_ecs_exec" {
   statement {
     actions = [
-      "logs:CreateLogStream",
-      "logs:PutLogEvents",
-      "logs:DescribeLogStreams"
+      "ssmmessages:CreateControlChannel",
+      "ssmmessages:CreateDataChannel",
+      "ssmmessages:OpenControlChannel",
+      "ssmmessages:OpenDataChannel",
     ]
     resources = ["*"]
   }
 }
-resource "aws_iam_role_policy" "task_inline" {
-  name   = "${var.name}-task-inline"
+
+resource "aws_iam_role_policy" "task_ecs_exec" {
+  name   = "${var.name}-ecs-exec"
   role   = aws_iam_role.task.id
-  policy = data.aws_iam_policy_document.task_policy.json
+  policy = data.aws_iam_policy_document.task_ecs_exec.json
 }
 
 resource "aws_ecs_task_definition" "users" {
@@ -141,9 +241,14 @@ resource "aws_ecs_task_definition" "users" {
   task_role_arn            = aws_iam_role.task.arn
 
   container_definitions = jsonencode([{
-    name  = "users"
-    image = var.image_users
-    portMappings = [{ containerPort = 3001, protocol = "tcp" }]
+    name                   = "users"
+    image                  = var.image_users
+    essential              = true
+    user                   = "1000"
+    readonlyRootFilesystem = true
+    linuxParameters        = { initProcessEnabled = true }
+    stopTimeout            = 30
+    portMappings           = [{ containerPort = 3001, protocol = "tcp" }]
     environment = [
       { name = "PORT", value = "3001" },
       { name = "LOG_LEVEL", value = "info" }
@@ -152,7 +257,7 @@ resource "aws_ecs_task_definition" "users" {
       logDriver = "awslogs"
       options = {
         awslogs-group         = var.log_group_name
-        awslogs-region        = data.aws_region.current.name
+        awslogs-region        = data.aws_region.current.region
         awslogs-stream-prefix = "users"
       }
     }
@@ -176,9 +281,14 @@ resource "aws_ecs_task_definition" "orders" {
   task_role_arn            = aws_iam_role.task.arn
 
   container_definitions = jsonencode([{
-    name  = "orders"
-    image = var.image_orders
-    portMappings = [{ containerPort = 3002, protocol = "tcp" }]
+    name                   = "orders"
+    image                  = var.image_orders
+    essential              = true
+    user                   = "1000"
+    readonlyRootFilesystem = true
+    linuxParameters        = { initProcessEnabled = true }
+    stopTimeout            = 30
+    portMappings           = [{ containerPort = 3002, protocol = "tcp" }]
     environment = [
       { name = "PORT", value = "3002" },
       { name = "LOG_LEVEL", value = "info" },
@@ -188,7 +298,7 @@ resource "aws_ecs_task_definition" "orders" {
       logDriver = "awslogs"
       options = {
         awslogs-group         = var.log_group_name
-        awslogs-region        = data.aws_region.current.name
+        awslogs-region        = data.aws_region.current.region
         awslogs-stream-prefix = "orders"
       }
     }
@@ -212,9 +322,14 @@ resource "aws_ecs_task_definition" "gateway" {
   task_role_arn            = aws_iam_role.task.arn
 
   container_definitions = jsonencode([{
-    name  = "gateway"
-    image = var.image_gateway
-    portMappings = [{ containerPort = 3000, protocol = "tcp" }]
+    name                   = "gateway"
+    image                  = var.image_gateway
+    essential              = true
+    user                   = "1000"
+    readonlyRootFilesystem = true
+    linuxParameters        = { initProcessEnabled = true }
+    stopTimeout            = 30
+    portMappings           = [{ containerPort = 3000, protocol = "tcp" }]
     environment = [
       { name = "PORT", value = "3000" },
       { name = "LOG_LEVEL", value = "info" },
@@ -224,7 +339,7 @@ resource "aws_ecs_task_definition" "gateway" {
       logDriver = "awslogs"
       options = {
         awslogs-group         = var.log_group_name
-        awslogs-region        = data.aws_region.current.name
+        awslogs-region        = data.aws_region.current.region
         awslogs-stream-prefix = "gateway"
       }
     }
@@ -254,7 +369,7 @@ resource "aws_service_discovery_service" "users" {
       type = "A"
     }
   }
-  health_check_custom_config { failure_threshold = 1 }
+  health_check_custom_config {}
 }
 
 resource "aws_service_discovery_service" "orders" {
@@ -266,19 +381,26 @@ resource "aws_service_discovery_service" "orders" {
       type = "A"
     }
   }
-  health_check_custom_config { failure_threshold = 1 }
+  health_check_custom_config {}
 }
 
 resource "aws_ecs_service" "users" {
-  name            = "${var.name}-users"
-  cluster         = aws_ecs_cluster.this.id
-  task_definition = aws_ecs_task_definition.users.arn
-  desired_count   = 2
-  launch_type     = "FARGATE"
+  name                   = "${var.name}-users"
+  cluster                = aws_ecs_cluster.this.id
+  task_definition        = aws_ecs_task_definition.users.arn
+  desired_count          = 2
+  launch_type            = "FARGATE"
+  enable_execute_command = true
+  propagate_tags         = "SERVICE"
+
+  deployment_circuit_breaker {
+    enable   = true
+    rollback = true
+  }
 
   network_configuration {
-    subnets         = var.private_subnet_ids
-    security_groups = [aws_security_group.svc.id]
+    subnets          = var.private_subnet_ids
+    security_groups  = [aws_security_group.users.id]
     assign_public_ip = false
   }
 
@@ -288,15 +410,22 @@ resource "aws_ecs_service" "users" {
 }
 
 resource "aws_ecs_service" "orders" {
-  name            = "${var.name}-orders"
-  cluster         = aws_ecs_cluster.this.id
-  task_definition = aws_ecs_task_definition.orders.arn
-  desired_count   = 2
-  launch_type     = "FARGATE"
+  name                   = "${var.name}-orders"
+  cluster                = aws_ecs_cluster.this.id
+  task_definition        = aws_ecs_task_definition.orders.arn
+  desired_count          = 2
+  launch_type            = "FARGATE"
+  enable_execute_command = true
+  propagate_tags         = "SERVICE"
+
+  deployment_circuit_breaker {
+    enable   = true
+    rollback = true
+  }
 
   network_configuration {
-    subnets         = var.private_subnet_ids
-    security_groups = [aws_security_group.svc.id]
+    subnets          = var.private_subnet_ids
+    security_groups  = [aws_security_group.orders.id]
     assign_public_ip = false
   }
 
@@ -306,15 +435,23 @@ resource "aws_ecs_service" "orders" {
 }
 
 resource "aws_ecs_service" "gateway" {
-  name            = "${var.name}-gateway"
-  cluster         = aws_ecs_cluster.this.id
-  task_definition = aws_ecs_task_definition.gateway.arn
-  desired_count   = 2
-  launch_type     = "FARGATE"
+  name                              = "${var.name}-gateway"
+  cluster                           = aws_ecs_cluster.this.id
+  task_definition                   = aws_ecs_task_definition.gateway.arn
+  desired_count                     = 2
+  launch_type                       = "FARGATE"
+  enable_execute_command            = true
+  health_check_grace_period_seconds = 45
+  propagate_tags                    = "SERVICE"
+
+  deployment_circuit_breaker {
+    enable   = true
+    rollback = true
+  }
 
   network_configuration {
-    subnets         = var.private_subnet_ids
-    security_groups = [aws_security_group.svc.id]
+    subnets          = var.private_subnet_ids
+    security_groups  = [aws_security_group.gateway.id]
     assign_public_ip = false
   }
 

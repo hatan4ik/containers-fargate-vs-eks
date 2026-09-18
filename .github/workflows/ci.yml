@@ -3,8 +3,37 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: hashicorp/setup-terraform@v3
+      - uses: terraform-linters/setup-tflint@v5
+      - name: Install JavaScript dependencies
+        run: npm ci
+      - name: Audit runtime dependencies
+        run: npm audit --omit=dev --audit-level=high
+      - name: Lint and type-check
+        run: ./scripts/lint.sh
+      - name: Validate infrastructure
+        run: |
+          terraform -chdir=labs/10-ecs-fargate-track/terraform init -backend=false -lockfile=readonly
+          terraform -chdir=labs/10-ecs-fargate-track/terraform validate
+          terraform -chdir=labs/20-eks-track/terraform init -backend=false -lockfile=readonly
+          terraform -chdir=labs/20-eks-track/terraform validate
+      - name: Test service contracts and Kubernetes rendering
+        run: ./scripts/test.sh
+
   docker-build:
+    needs: quality
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -12,4 +41,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Docker build
-        run: docker build -t z2h/${{ matrix.service }}:ci services/${{ matrix.service }}
+        run: docker build -f services/${{ matrix.service }}/Dockerfile -t z2h/${{ matrix.service }}:ci .

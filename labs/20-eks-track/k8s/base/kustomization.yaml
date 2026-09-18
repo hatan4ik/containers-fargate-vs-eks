@@ -1,0 +1,6 @@
+resources:
+  - namespace.yaml
+  - configmap.yaml
+  - deployments.yaml
+  - network-policies.yaml
+  - disruption-budgets.yaml

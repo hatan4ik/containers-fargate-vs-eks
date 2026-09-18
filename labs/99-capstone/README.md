@@ -1,8 +1,10 @@
 # Capstone — Production Baseline
 
 Deliver either track with:
-- Timeouts everywhere, retries only where safe
-- Request ID propagation (done at gateway)
-- Private services (only entry via ALB/LB)
-- Autoscaling (Fargate module includes gateway CPU autoscaling; EKS includes metrics-server for HPA extension)
+
+- Timeouts everywhere, retries only where safe (no retry of a non-idempotent order)
+- Request-ID propagation across gateway, orders, and users
+- Private internal services (only entry via ALB/LB)
+- Autoscaling (Fargate includes gateway CPU autoscaling; add an approved metrics
+  pipeline before introducing EKS HPA)
 - Runbooks executed at least once (deploy + rollback + debug)

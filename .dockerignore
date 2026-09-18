@@ -1,0 +1,9 @@
+.git
+.github
+.trunk
+**/node_modules
+coverage
+*.log
+*.tfstate
+*.tfvars
+United-Business-Trip-2.html
