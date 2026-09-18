@@ -19,7 +19,7 @@ The GitHub repository default is derived from this repository's origin:
 ## Requirements
 
 | Name | Version |
-| ---- | ------- |
+|------|---------|
 | terraform | >= 1.10.0, < 2.0.0 |
 | aws | ~> 6.0 |
 
@@ -30,7 +30,7 @@ No providers.
 ## Modules
 
 | Name | Source | Version |
-| ---- | ------ | ------- |
+|------|--------|---------|
 | github\_actions\_oidc | ../../modules/identity/github-actions-oidc | n/a |
 | terraform\_state | ../../modules/platform/terraform-state | n/a |
 
@@ -41,7 +41,7 @@ No resources.
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-| ---- | ----------- | ---- | ------- | :------: |
+|------|-------------|------|---------|:--------:|
 | access\_log\_bucket\_name | Dedicated pre-provisioned S3 bucket that receives state-bucket server access logs. | `string` | n/a | yes |
 | apply\_policy\_arns | Approved least-privilege workload policy ARNs keyed by fargate-dev, fargate-prod, eks-dev, and eks-prod. | `map(set(string))` | n/a | yes |
 | kms\_key\_account\_root\_arn | AWS account root principal ARN that enables IAM policies to administer and use the state KMS key. | `string` | n/a | yes |
@@ -57,7 +57,7 @@ No resources.
 ## Outputs
 
 | Name | Description |
-| ---- | ----------- |
+|------|-------------|
 | apply\_role\_arns | Environment-keyed OIDC apply-role ARNs. Configure these only after migration verification. |
 | plan\_role\_arns | Environment-keyed OIDC plan-role ARNs. Configure these as GitHub Environment variables. |
 | state\_bucket\_name | Terraform state bucket name for CI backend configuration. |

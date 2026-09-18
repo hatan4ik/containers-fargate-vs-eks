@@ -9,14 +9,14 @@ requires an explicit opt-in.
 ## Requirements
 
 | Name | Version |
-| ---- | ------- |
+|------|---------|
 | terraform | >= 1.6.0 |
 | aws | ~> 6.0 |
 
 ## Providers
 
 | Name | Version |
-| ---- | ------- |
+|------|---------|
 | aws | 6.65.0 |
 
 ## Modules
@@ -26,7 +26,7 @@ No modules.
 ## Resources
 
 | Name | Type |
-| ---- | ---- |
+|------|------|
 | [aws_appautoscaling_policy.cpu](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_policy) | resource |
 | [aws_appautoscaling_target.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_target) | resource |
 | [aws_ecs_service.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_service) | resource |
@@ -42,7 +42,7 @@ No modules.
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-| ---- | ----------- | ---- | ------- | :------: |
+|------|-------------|------|---------|:--------:|
 | cluster\_id | ECS cluster ID. | `string` | n/a | yes |
 | cluster\_name | ECS cluster name (used to build the autoscaling resource\_id). | `string` | n/a | yes |
 | image | Container image URI with immutable tag or digest. | `string` | n/a | yes |
@@ -75,7 +75,7 @@ No modules.
 ## Outputs
 
 | Name | Description |
-| ---- | ----------- |
+|------|-------------|
 | security\_group\_id | Security group ID for this service's tasks. |
 | service\_discovery\_arn | Cloud Map service ARN. Null when service discovery is not configured. |
 | service\_id | ECS service ID. |

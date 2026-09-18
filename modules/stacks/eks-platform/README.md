@@ -8,7 +8,7 @@ through one typed module call.
 ## Requirements
 
 | Name | Version |
-| ---- | ------- |
+|------|---------|
 | terraform | >= 1.6.0, < 2.0.0 |
 | aws | ~> 6.0 |
 
@@ -19,7 +19,7 @@ No providers.
 ## Modules
 
 | Name | Source | Version |
-| ---- | ------ | ------- |
+|------|--------|---------|
 | cluster\_logs | ../../observability/log-group | n/a |
 | eks | ../../compute/eks | n/a |
 | vpc | ../../network/vpc | n/a |
@@ -31,7 +31,7 @@ No resources.
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-| ---- | ----------- | ---- | ------- | :------: |
+|------|-------------|------|---------|:--------:|
 | availability\_zones | Two or three explicit availability-zone names used by the VPC. | `list(string)` | n/a | yes |
 | cluster\_log\_kms\_key\_id | Customer-managed KMS key ARN used to encrypt EKS control-plane logs. | `string` | n/a | yes |
 | flow\_log\_kms\_key\_id | Customer-managed KMS key ARN used to encrypt VPC flow logs. | `string` | n/a | yes |
@@ -52,7 +52,7 @@ No resources.
 ## Outputs
 
 | Name | Description |
-| ---- | ----------- |
+|------|-------------|
 | cluster\_endpoint | EKS Kubernetes API endpoint. |
 | cluster\_name | EKS cluster name. |
 | oidc\_provider\_arn | IAM OIDC provider ARN for IAM roles for service accounts. |

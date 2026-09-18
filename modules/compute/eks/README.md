@@ -9,7 +9,7 @@ placeholder.
 ## Requirements
 
 | Name | Version |
-| ---- | ------- |
+|------|---------|
 | terraform | >= 1.6.0 |
 | aws | ~> 6.0 |
 | tls | ~> 4.0 |
@@ -17,7 +17,7 @@ placeholder.
 ## Providers
 
 | Name | Version |
-| ---- | ------- |
+|------|---------|
 | aws | 6.65.0 |
 | tls | 4.4.1 |
 
@@ -28,7 +28,7 @@ No modules.
 ## Resources
 
 | Name | Type |
-| ---- | ---- |
+|------|------|
 | [aws_eks_addon.coredns](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_addon) | resource |
 | [aws_eks_addon.kube_proxy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_addon) | resource |
 | [aws_eks_addon.vpc_cni](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_addon) | resource |
@@ -46,7 +46,7 @@ No modules.
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-| ---- | ----------- | ---- | ------- | :------: |
+|------|-------------|------|---------|:--------:|
 | name | Name prefix for all resources. | `string` | n/a | yes |
 | private\_subnet\_ids | Private subnet IDs for node groups (tagged kubernetes.io/role/internal-elb=1). | `list(string)` | n/a | yes |
 | public\_subnet\_ids | Public subnet IDs (tagged kubernetes.io/role/elb=1 by the vpc module). | `list(string)` | n/a | yes |
@@ -60,7 +60,7 @@ No modules.
 ## Outputs
 
 | Name | Description |
-| ---- | ----------- |
+|------|-------------|
 | cluster\_certificate\_authority\_data | Base64 encoded EKS cluster certificate authority data. |
 | cluster\_endpoint | EKS cluster API endpoint. |
 | cluster\_name | EKS cluster name. |

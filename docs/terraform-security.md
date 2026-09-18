@@ -14,6 +14,12 @@ and EKS Secret envelope encryption; do not reuse the state KMS key. ALB access-l
 buckets are pre-provisioned platform dependencies and must grant the relevant ALB
 log-delivery principal write access.
 
+ECR publishing is a separate release concern. The publish workflow runs only for
+`service-v*` tags or manual dispatch, requires a protected `fargate-*` GitHub
+Environment, and uses its `ECR_PUBLISH_ROLE_ARN` through OIDC. That role must allow
+only the required ECR push actions on the three pre-provisioned repositories; CI
+never creates repositories or uses a Terraform apply role to publish images.
+
 The state bootstrap additionally requires a dedicated S3 access-log destination,
 a versioned cross-region replica bucket and replica KMS key, and its account-root
 principal ARN. It enables EventBridge notifications for state-bucket audit events.

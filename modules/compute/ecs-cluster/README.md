@@ -8,14 +8,14 @@ or world-open ingress require explicit, reviewable opt-ins.
 ## Requirements
 
 | Name | Version |
-| ---- | ------- |
+|------|---------|
 | terraform | >= 1.6.0 |
 | aws | ~> 6.0 |
 
 ## Providers
 
 | Name | Version |
-| ---- | ------- |
+|------|---------|
 | aws | 6.65.0 |
 
 ## Modules
@@ -25,7 +25,7 @@ No modules.
 ## Resources
 
 | Name | Type |
-| ---- | ---- |
+|------|------|
 | [aws_ecs_cluster.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_cluster) | resource |
 | [aws_iam_role.task](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role.task_execution](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
@@ -47,7 +47,7 @@ No modules.
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-| ---- | ----------- | ---- | ------- | :------: |
+|------|-------------|------|---------|:--------:|
 | alb\_access\_logs | Pre-provisioned S3 bucket and prefix for ALB access logs. The bucket policy must allow the ALB log-delivery service for this account and region. | ```object({ bucket = string prefix = optional(string, "alb") })``` | n/a | yes |
 | certificate\_arn | ACM certificate ARN for the mandatory TLS listener on the ALB. | `string` | n/a | yes |
 | name | Name prefix for all resources in this module. | `string` | n/a | yes |
@@ -64,7 +64,7 @@ No modules.
 ## Outputs
 
 | Name | Description |
-| ---- | ----------- |
+|------|-------------|
 | acm\_certificate\_arn | ACM certificate ARN used by the mandatory HTTPS listener. |
 | alb\_arn | ALB ARN. |
 | alb\_dns\_name | ALB DNS name. |

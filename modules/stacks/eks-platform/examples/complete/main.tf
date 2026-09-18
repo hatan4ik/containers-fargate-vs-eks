@@ -15,9 +15,9 @@ module "platform" {
   kubernetes_version     = "1.30"
   node_instance_type     = "m6i.large"
   node_disk_size_gb      = 100
-  flow_log_kms_key_id    = "arn:aws:kms:us-east-1:123456789012:key/replace-me"
-  cluster_log_kms_key_id = "arn:aws:kms:us-east-1:123456789012:key/replace-me"
-  secrets_kms_key_arn    = "arn:aws:kms:us-east-1:123456789012:key/replace-me"
+  flow_log_kms_key_id    = "arn:aws:kms:us-east-1:000000000000:key/example-flow-logs-key"
+  cluster_log_kms_key_id = "arn:aws:kms:us-east-1:000000000000:key/example-cluster-logs-key"
+  secrets_kms_key_arn    = "arn:aws:kms:us-east-1:000000000000:key/example-secrets-key"
   node_scaling = {
     min     = 2
     desired = 3

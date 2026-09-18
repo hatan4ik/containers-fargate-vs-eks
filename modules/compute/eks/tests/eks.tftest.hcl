@@ -15,7 +15,7 @@ run "private_endpoint_plan" {
     name                = "test-eks"
     public_subnet_ids   = ["subnet-00000000000000001", "subnet-00000000000000002"]
     private_subnet_ids  = ["subnet-00000000000000003", "subnet-00000000000000004"]
-    secrets_kms_key_arn = "arn:aws:kms:us-east-1:123456789012:key/11111111-1111-1111-1111-111111111111"
+    secrets_kms_key_arn = "arn:aws:kms:us-east-1:000000000000:key/test-key"
   }
 
   assert {
@@ -31,7 +31,7 @@ run "invalid_secrets_key_rejected" {
     name                = "test-eks"
     public_subnet_ids   = ["subnet-00000000000000001", "subnet-00000000000000002"]
     private_subnet_ids  = ["subnet-00000000000000003", "subnet-00000000000000004"]
-    secrets_kms_key_arn = "not-a-kms-key"
+    secrets_kms_key_arn = "invalid"
   }
 
   expect_failures = [var.secrets_kms_key_arn]
@@ -45,7 +45,7 @@ run "invalid_node_disk_rejected" {
     public_subnet_ids   = ["subnet-00000000000000001", "subnet-00000000000000002"]
     private_subnet_ids  = ["subnet-00000000000000003", "subnet-00000000000000004"]
     node_disk_size_gb   = 10
-    secrets_kms_key_arn = "arn:aws:kms:us-east-1:123456789012:key/11111111-1111-1111-1111-111111111111"
+    secrets_kms_key_arn = "arn:aws:kms:us-east-1:000000000000:key/test-key"
   }
 
   expect_failures = [var.node_disk_size_gb]

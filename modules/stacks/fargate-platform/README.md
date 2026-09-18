@@ -8,7 +8,7 @@ one typed input object; all submodules remain independently reusable.
 ## Requirements
 
 | Name | Version |
-| ---- | ------- |
+|------|---------|
 | terraform | >= 1.6.0, < 2.0.0 |
 | aws | ~> 6.0 |
 
@@ -19,7 +19,7 @@ No providers.
 ## Modules
 
 | Name | Source | Version |
-| ---- | ------ | ------- |
+|------|--------|---------|
 | application\_logs | ../../observability/log-group | n/a |
 | cluster | ../../compute/ecs-cluster | n/a |
 | gateway | ../../compute/ecs-service | n/a |
@@ -34,7 +34,7 @@ No resources.
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-| ---- | ----------- | ---- | ------- | :------: |
+|------|-------------|------|---------|:--------:|
 | alb\_access\_logs | Pre-provisioned S3 destination for ALB access logs. | ```object({ bucket = string prefix = optional(string, "alb") })``` | n/a | yes |
 | application\_log\_kms\_key\_id | Customer-managed KMS key ARN used to encrypt application logs. | `string` | n/a | yes |
 | availability\_zones | Two or three explicit availability-zone names used by the VPC. | `list(string)` | n/a | yes |
@@ -60,7 +60,7 @@ No resources.
 ## Outputs
 
 | Name | Description |
-| ---- | ----------- |
+|------|-------------|
 | alb\_dns\_name | Application load balancer DNS name. |
 | cluster\_name | ECS cluster name. |
 | service\_names | Stable ECS service names keyed by application component. |

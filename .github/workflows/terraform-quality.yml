@@ -48,8 +48,6 @@ jobs:
           terraform_version: "1.16.3"
       - uses: terraform-linters/setup-tflint@v5
       - name: Terraform quality gates
-        env:
-          TERRAFORM_DOCS: docker run --rm -v ${{ github.workspace }}:/work -w /work quay.io/terraform-docs/terraform-docs:0.20.0
         run: make terraform-ci
 
   security:

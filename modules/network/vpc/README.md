@@ -8,14 +8,14 @@ index shifts. Optional legacy flow-log names support a plan-verified state migra
 ## Requirements
 
 | Name | Version |
-| ---- | ------- |
+|------|---------|
 | terraform | >= 1.6.0 |
 | aws | ~> 6.0 |
 
 ## Providers
 
 | Name | Version |
-| ---- | ------- |
+|------|---------|
 | aws | 6.65.0 |
 
 ## Modules
@@ -25,7 +25,7 @@ No modules.
 ## Resources
 
 | Name | Type |
-| ---- | ---- |
+|------|------|
 | [aws_cloudwatch_log_group.vpc_flow](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_group) | resource |
 | [aws_default_security_group.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/default_security_group) | resource |
 | [aws_eip.nat](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eip) | resource |
@@ -49,7 +49,7 @@ No modules.
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-| ---- | ----------- | ---- | ------- | :------: |
+|------|-------------|------|---------|:--------:|
 | availability\_zones | Explicit list of AZ names to use (e.g. ["us-east-1a","us-east-1b"]). Length must be 2 or 3. | `list(string)` | n/a | yes |
 | cidr | IPv4 CIDR block for the VPC (e.g. 10.40.0.0/16). | `string` | n/a | yes |
 | flow\_log\_kms\_key\_id | Customer-managed KMS key ARN used to encrypt VPC flow logs. Use a key policy that permits the regional CloudWatch Logs service. | `string` | n/a | yes |
@@ -64,7 +64,7 @@ No modules.
 ## Outputs
 
 | Name | Description |
-| ---- | ----------- |
+|------|-------------|
 | flow\_log\_group\_name | Name of the VPC flow log CloudWatch log group. |
 | flow\_log\_role\_name | Name of the IAM role used by VPC flow logs. |
 | private\_subnet\_id\_list | Ordered list of private subnet IDs (sorted by AZ name). |

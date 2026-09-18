@@ -2,42 +2,52 @@ name: Build and Push to ECR (OIDC)
 
 on:
   push:
-    branches: ["main"]
+    tags: ["service-v*"]
   workflow_dispatch:
+    # checkov:skip=CKV_GHA_7: expires 2027-09-18; choice is allowlisted and only selects a protected environment.
+    inputs:
+      target_environment:
+        description: "Approved GitHub Environment containing the ECR publishing role"
+        required: true
+        default: fargate-dev
+        type: choice
+        options: [fargate-dev, fargate-prod]
 
 permissions:
   id-token: write
   contents: read
 
-env:
-  AWS_REGION: ${{ vars.AWS_REGION }}
-  ECR_REGISTRY: ${{ vars.ECR_REGISTRY }}
-
 jobs:
   build-push:
     runs-on: ubuntu-latest
+    environment: ${{ inputs.target_environment || 'fargate-prod' }}
+    concurrency:
+      group: ecr-publish-${{ inputs.target_environment || 'fargate-prod' }}
+      cancel-in-progress: false
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      ECR_REGISTRY: ${{ vars.ECR_REGISTRY }}
+      ECR_PUBLISH_ROLE_ARN: ${{ vars.ECR_PUBLISH_ROLE_ARN }}
     strategy:
       matrix:
         service: [gateway, users, orders]
     steps:
       - uses: actions/checkout@v4
 
+      - name: Verify protected-environment configuration
+        run: |
+          : "${AWS_REGION:?Configure AWS_REGION in this GitHub Environment}"
+          : "${ECR_REGISTRY:?Configure ECR_REGISTRY in this GitHub Environment}"
+          : "${ECR_PUBLISH_ROLE_ARN:?Configure ECR_PUBLISH_ROLE_ARN in this GitHub Environment}"
+
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-to-assume: ${{ env.ECR_PUBLISH_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to ECR
         uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Ensure ECR repo exists
-        run: |
-          aws ecr describe-repositories --repository-names "${{ matrix.service }}" >/dev/null 2>&1 || \
-            aws ecr create-repository \
-              --repository-name "${{ matrix.service }}" \
-              --image-scanning-configuration scanOnPush=true \
-              --image-tag-mutability IMMUTABLE >/dev/null
 
       - name: Build
         run: |

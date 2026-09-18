@@ -41,9 +41,14 @@ See `labs/00-setup/prerequisites.md`.
 See `docs/04-security.md` and `.github/workflows/*` for setup:
 
 - Configure AWS IAM Role trust for GitHub OIDC
-- Set repo variables: `AWS_REGION`, `AWS_ROLE_ARN`, `ECR_REGISTRY`
+- Create protected `fargate-dev` and `fargate-prod` GitHub Environments and set
+  `AWS_REGION`, `ECR_REGISTRY`, and `ECR_PUBLISH_ROLE_ARN` as environment variables.
+  The publish role must be an ECR-write-only OIDC role whose trust is restricted to
+  the matching GitHub Environment.
 - Images are pushed to ECR for `gateway`, `users`, and `orders` with an immutable
-  `sha-<commit-sha>` tag. Use that exact tag or an image digest for deployments.
+  `sha-<commit-sha>` tag. Publishing runs only for `service-v*` release tags or a
+  manual dispatch through an approved GitHub Environment. Use that exact tag or an
+  image digest for deployments.
 
 ## Verification
 

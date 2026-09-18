@@ -18,13 +18,16 @@ TERRAFORM_ROOTS := \
 	labs/10-ecs-fargate-track/terraform \
 	labs/20-eks-track/terraform
 
-TERRAFORM_DOCS ?= terraform-docs
+# Keep generated documentation byte-for-byte identical in local development and CI.
+TERRAFORM_DOCS ?= docker run --rm -v $(CURDIR):/work -w /work quay.io/terraform-docs/terraform-docs:0.20.0
 TFLINT_CONFIG ?= $(CURDIR)/.tflint.hcl
 
 .PHONY: terraform-format terraform-lint terraform-validate terraform-test terraform-docs terraform-docs-check terraform-ci
 
 terraform-format:
-	terraform fmt -check -recursive
+	@for directory in $$(git ls-files '*.tf' '*.tfvars' '*.tftest.hcl' | xargs -n1 dirname | sort -u); do \
+		terraform -chdir=$$directory fmt -check; \
+	done
 
 terraform-lint:
 	@for directory in $(TERRAFORM_MODULES) $(TERRAFORM_ROOTS); do \

@@ -12,5 +12,5 @@ module "eks" {
   name                = "example-dev"
   public_subnet_ids   = ["subnet-replace-1", "subnet-replace-2"]
   private_subnet_ids  = ["subnet-replace-3", "subnet-replace-4"]
-  secrets_kms_key_arn = "arn:aws:kms:us-east-1:123456789012:key/replace-me"
+  secrets_kms_key_arn = "arn:aws:kms:us-east-1:000000000000:key/example-key"
 }

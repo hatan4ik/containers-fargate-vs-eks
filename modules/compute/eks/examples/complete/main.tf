@@ -15,7 +15,7 @@ module "eks" {
   kubernetes_version  = "1.30"
   node_instance_type  = "m6i.large"
   node_disk_size_gb   = 100
-  secrets_kms_key_arn = "arn:aws:kms:us-east-1:123456789012:key/replace-me"
+  secrets_kms_key_arn = "arn:aws:kms:us-east-1:000000000000:key/example-key"
   node_scaling = {
     min     = 2
     desired = 3

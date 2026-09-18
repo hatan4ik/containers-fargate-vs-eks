@@ -2,6 +2,7 @@ name: Terraform Plan (manual)
 
 on:
   workflow_dispatch:
+    # checkov:skip=CKV_GHA_7: expires 2027-09-18; input is allowlisted below and selects a protected environment only.
     inputs:
       environment:
         description: "Target environment with a configured GitHub Environment and S3 state"

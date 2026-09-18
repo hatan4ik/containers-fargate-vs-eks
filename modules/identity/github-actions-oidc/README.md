@@ -9,14 +9,14 @@ apply policy for each environment; this module never grants administrator access
 ## Requirements
 
 | Name | Version |
-| ---- | ------- |
+|------|---------|
 | terraform | >= 1.6.0, < 2.0.0 |
 | aws | ~> 6.0 |
 
 ## Providers
 
 | Name | Version |
-| ---- | ------- |
+|------|---------|
 | aws | 6.65.0 |
 
 ## Modules
@@ -26,7 +26,7 @@ No modules.
 ## Resources
 
 | Name | Type |
-| ---- | ---- |
+|------|------|
 | [aws_iam_openid_connect_provider.github](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_openid_connect_provider) | resource |
 | [aws_iam_role.apply](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role.plan](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
@@ -41,7 +41,7 @@ No modules.
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-| ---- | ----------- | ---- | ------- | :------: |
+|------|-------------|------|---------|:--------:|
 | environments | Stable environment keys with GitHub Environment names, dedicated state keys, and explicitly approved apply policies. | ```map(object({ github_environment = string state_key = string apply_policy_arns = set(string) }))``` | n/a | yes |
 | github\_repository | GitHub repository allowed to request OIDC credentials, in owner/repository form. | `string` | n/a | yes |
 | kms\_key\_arn | ARN of the KMS key encrypting Terraform state. | `string` | n/a | yes |
@@ -53,7 +53,7 @@ No modules.
 ## Outputs
 
 | Name | Description |
-| ---- | ----------- |
+|------|-------------|
 | apply\_role\_arns | Map of environment key to GitHub OIDC apply-role ARN. |
 | github\_oidc\_provider\_arn | GitHub Actions OIDC provider ARN used by the roles. |
 | plan\_role\_arns | Map of environment key to GitHub OIDC plan-role ARN. |
