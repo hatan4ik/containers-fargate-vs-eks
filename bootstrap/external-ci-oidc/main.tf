@@ -1,6 +1,6 @@
 module "provider" {
   source   = "../../modules/identity/external-ci-oidc"
-  for_each = var.providers
+  for_each = var.oidc_providers
 
   name            = "${var.name}-${each.key}"
   issuer_url      = each.value.issuer_url

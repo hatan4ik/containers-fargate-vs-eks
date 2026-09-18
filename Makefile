@@ -55,11 +55,11 @@ terraform-lock:
 	done
 
 terraform-docs:
-	@for directory in $(TERRAFORM_MODULES) bootstrap/state-backend; do \
+	@for directory in $(TERRAFORM_MODULES) bootstrap/state-backend bootstrap/external-ci-oidc; do \
 		$(TERRAFORM_DOCS) --config .terraform-docs.yml $$directory; \
 	done
 
 terraform-docs-check: terraform-docs
-	git diff --exit-code -- $(addsuffix /README.md,$(TERRAFORM_MODULES)) bootstrap/state-backend/README.md
+	git diff --exit-code -- $(addsuffix /README.md,$(TERRAFORM_MODULES)) bootstrap/state-backend/README.md bootstrap/external-ci-oidc/README.md
 
 terraform-ci: terraform-format terraform-lint terraform-validate terraform-test terraform-docs-check

@@ -5,4 +5,5 @@ node_modules/
 # terraform-docs owns these generated module inventories. Its pinned container is
 # the canonical formatter, and its table layout intentionally differs from Prettier.
 bootstrap/state-backend/README.md
+bootstrap/external-ci-oidc/README.md
 modules/**/README.md

@@ -4,7 +4,7 @@ name   = "example-platform"
 
 # Verify current thumbprints from each issuer before applying. The GitLab example
 # below is for GitLab.com. Azure DevOps needs your organization GUID in the issuer.
-providers = {
+oidc_providers = {
   gitlab = {
     issuer_url      = "https://gitlab.com"
     audience        = "sts.amazonaws.com"

@@ -3,7 +3,8 @@
 ## Layout
 
 ```text
-bootstrap/state-backend/    one-time secure state and GitHub OIDC bootstrap
+bootstrap/state-backend/    one-time secure state and GitHub Actions OIDC bootstrap
+bootstrap/external-ci-oidc/ optional GitLab/Azure DevOps OIDC bootstrap
 modules/<domain>/<unit>/    reusable, provider-agnostic building blocks
 modules/stacks/             cohesive Fargate and EKS compositions
 environments/<platform>/<env>/
@@ -28,10 +29,12 @@ Values flow through explicit module inputs and outputs.
 - Resources with repeated instances are driven by maps and stable `for_each` keys,
   never positional list indexes.
 
-GitHub Actions YAML orchestrates credentials and checks only. It does not duplicate
-Terraform environment values. The manual plan workflow selects one allowlisted GitHub
-Environment, obtains its OIDC plan role, and reads its local `terraform.tfvars` after
-initializing encrypted S3 state with native locking.
+CI YAML orchestrates credentials and checks only. It does not duplicate Terraform
+environment values. The active GitHub manual plan workflow selects one allowlisted
+protected Environment, obtains its OIDC plan role, decodes its Environment-scoped
+`TERRAFORM_TFVARS_B64` only for the run, and initializes encrypted S3 state with
+native locking. GitLab and Azure DevOps use the same plan helper but are opt-in,
+manual-by-default alternatives, not additional authorities for the same target.
 
 ## Adding infrastructure
 
@@ -52,7 +55,8 @@ never copy a resource block between environments.
 
 1. Copy the closest environment root and assign an independent S3 state key.
 2. Add an approved GitHub Environment, required reviewers for production, and only
-   its scoped `TF_STATE_*`, `TERRAFORM_PLAN_ROLE_ARN`, and release variables.
+   its scoped `TF_STATE_*`, `TERRAFORM_PLAN_ROLE_ARN`, `TERRAFORM_TFVARS_B64`, and
+   release variables.
 3. Add a matching environment-scoped OIDC role with least-privilege policies.
 4. Create ignored `terraform.tfvars` from the example, run a plan, and review it.
    An apply requires a separate, explicit approval and a migration-safe zero-change
@@ -78,5 +82,6 @@ provider locks contain macOS and Linux checksums; run `make terraform-lock` afte
 intentional provider upgrade. CI also performs JavaScript formatting/type checks,
 service tests, Docker builds, and Checkov policy scans.
 
-The state backend, OIDC boundary, security assumptions, and bootstrap procedure are
-documented in [docs/terraform-security.md](docs/terraform-security.md).
+The state backend, OIDC boundary, security assumptions, and complete bootstrap
+procedure are documented in [docs/terraform-security.md](docs/terraform-security.md)
+and [docs/AWS_SETUP.md](docs/AWS_SETUP.md).

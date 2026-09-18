@@ -6,7 +6,9 @@ teaching examples that deliberately demonstrate non-production trade-offs.
 
 The S3 state bootstrap has versioning, KMS encryption, public-access blocking,
 TLS-only access, state locking, and incomplete multipart-upload cleanup. S3-native
-locking requires Terraform 1.10 or later. CI uses GitHub OIDC roles; operators use
+locking requires Terraform 1.10 or later. GitHub Actions is the active CI authority
+and uses OIDC roles; GitLab and Azure DevOps may be configured as an explicit,
+separate OIDC authority through `bootstrap/external-ci-oidc`. Operators use
 MFA-backed IAM Identity Center roles.
 
 Workload environment values must supply dedicated KMS keys for CloudWatch Logs
@@ -27,3 +29,6 @@ The only Checkov waivers are KMS-policy checks that require `Resource: "*"` by A
 design; their principals are explicitly constrained in the key policy. This exception
 must be reviewed by 2027-09-18 and removed when the scanner can model that AWS KMS
 requirement without a wildcard-resource finding.
+
+Follow [AWS_SETUP.md](AWS_SETUP.md) for the ordered zero-to-plan procedure and
+the external dependencies Terraform deliberately does not create.

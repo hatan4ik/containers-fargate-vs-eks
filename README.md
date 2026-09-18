@@ -36,15 +36,19 @@ structured request-ID-aware logs, graceful shutdown, and unit tests:
 
 See `labs/00-setup/prerequisites.md`.
 
+For the complete production AWS path—external prerequisites, secure state
+bootstrap, OIDC CI configuration, and a first reviewed plan—follow
+[docs/AWS_SETUP.md](docs/AWS_SETUP.md).
+
 ## CI/CD (OIDC)
 
-See `docs/04-security.md` and `.github/workflows/*` for setup:
+See [docs/AWS_SETUP.md](docs/AWS_SETUP.md), `docs/04-security.md`, and
+`.github/workflows/*` for setup:
 
-- Configure AWS IAM Role trust for GitHub OIDC
-- Create protected `fargate-dev` and `fargate-prod` GitHub Environments and set
-  `AWS_REGION`, `ECR_REGISTRY`, and `ECR_PUBLISH_ROLE_ARN` as environment variables.
-  The publish role must be an ECR-write-only OIDC role whose trust is restricted to
-  the matching GitHub Environment.
+- Bootstrap encrypted S3 state and use protected GitHub Environments with
+  OIDC-only plan roles; CI never stores AWS access keys.
+- GitLab and Azure DevOps have equivalent, manual-by-default OIDC pipeline
+  templates for intentionally separate CI authorities.
 - Images are pushed to ECR for `gateway`, `users`, and `orders` with an immutable
   `sha-<commit-sha>` tag. Publishing runs only for `service-v*` release tags or a
   manual dispatch through an approved GitHub Environment. Use that exact tag or an

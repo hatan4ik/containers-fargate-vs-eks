@@ -20,7 +20,7 @@ variable "name" {
   }
 }
 
-variable "providers" {
+variable "oidc_providers" {
   type = map(object({
     issuer_url      = string
     audience        = string
@@ -35,8 +35,12 @@ variable "providers" {
   nullable    = false
 
   validation {
-    condition     = length(var.providers) > 0 && alltrue([for provider_key in keys(var.providers) : can(regex("^[a-z0-9-]{3,20}$", provider_key))])
-    error_message = "providers needs at least one stable lowercase provider key."
+    condition = length(var.oidc_providers) > 0 && alltrue([
+      for provider_key, provider in var.oidc_providers :
+      can(regex("^[a-z0-9-]{3,20}$", provider_key)) &&
+      alltrue([for role_key in keys(provider.roles) : length("${var.name}-${provider_key}-${role_key}") <= 64])
+    ])
+    error_message = "oidc_providers needs stable lowercase keys and every generated IAM role name must be 64 characters or fewer."
   }
 }
 
@@ -47,7 +51,7 @@ variable "tags" {
   nullable    = false
 
   validation {
-    condition     = contains(keys(var.tags), "Owner") && contains(keys(var.tags), "CostCenter")
-    error_message = "tags must include Owner and CostCenter."
+    condition     = contains(keys(var.tags), "Owner") && contains(keys(var.tags), "CostCenter") && length(trimspace(var.tags.Owner)) > 0 && length(trimspace(var.tags.CostCenter)) > 0
+    error_message = "tags must include non-empty Owner and CostCenter values."
   }
 }
