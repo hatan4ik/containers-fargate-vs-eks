@@ -5,7 +5,9 @@ TERRAFORM_MODULES := \
 	modules/observability/log-group \
 	modules/compute/ecs-cluster \
 	modules/compute/ecs-service \
-	modules/compute/eks
+	modules/compute/eks \
+	modules/stacks/fargate-platform \
+	modules/stacks/eks-platform
 
 TERRAFORM_ROOTS := \
 	bootstrap/state-backend \

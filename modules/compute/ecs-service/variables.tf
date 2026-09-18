@@ -202,8 +202,15 @@ variable "allow_public_https_egress" {
 
 variable "service_discovery_namespace_id" {
   type        = string
-  description = "Cloud Map namespace ID. When set, a service discovery record is registered."
+  description = "Cloud Map namespace ID used when service discovery is enabled."
   default     = null
+}
+
+variable "enable_service_discovery" {
+  type        = bool
+  description = "Create and register a Cloud Map service. When true, service_discovery_namespace_id is required."
+  default     = false
+  nullable    = false
 }
 
 variable "load_balancer" {

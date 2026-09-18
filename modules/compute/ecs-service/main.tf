@@ -122,7 +122,7 @@ resource "aws_ecs_task_definition" "this" {
 # ── Service Discovery ─────────────────────────────────────────────────────────
 
 resource "aws_service_discovery_service" "this" {
-  count = var.service_discovery_namespace_id != null ? 1 : 0
+  count = var.enable_service_discovery ? 1 : 0
   name  = var.service_name
   tags  = local.tags
 
@@ -162,7 +162,7 @@ resource "aws_ecs_service" "this" {
   }
 
   dynamic "service_registries" {
-    for_each = var.service_discovery_namespace_id != null ? [1] : []
+    for_each = var.enable_service_discovery ? [1] : []
     content {
       registry_arn = aws_service_discovery_service.this[0].arn
     }
@@ -181,6 +181,11 @@ resource "aws_ecs_service" "this" {
     precondition {
       condition     = var.load_balancer == null || try(var.load_balancer.container_port == var.port, false)
       error_message = "load_balancer.container_port must equal port."
+    }
+
+    precondition {
+      condition     = !var.enable_service_discovery || var.service_discovery_namespace_id != null
+      error_message = "service_discovery_namespace_id is required when enable_service_discovery is true."
     }
   }
 }

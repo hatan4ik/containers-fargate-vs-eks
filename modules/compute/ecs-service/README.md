@@ -62,13 +62,14 @@ No modules.
 | cpu | Fargate task CPU units (256, 512, 1024, 2048, 4096). | `number` | `256` | no |
 | desired\_count | Desired number of running tasks. | `number` | `2` | no |
 | egress\_rules | Additional egress rules beyond the standard DNS+HTTPS egress. Use cidr\_ipv4 or referenced\_sg\_id, not both. | ```list(object({ description = string from_port = number to_port = number ip_protocol = string cidr_ipv4 = optional(string) referenced_sg_id = optional(string) }))``` | `[]` | no |
+| enable\_service\_discovery | Create and register a Cloud Map service. When true, service\_discovery\_namespace\_id is required. | `bool` | `false` | no |
 | environment | Environment variables injected into the container (in addition to PORT and LOG\_LEVEL). | ```list(object({ name = string value = string }))``` | `[]` | no |
 | health\_check\_grace\_period\_seconds | Seconds ECS waits before starting health checks after a task starts. Set >0 for ALB-attached services. | `number` | `0` | no |
 | https\_egress\_cidrs | CIDRs permitted for HTTPS egress. Keep empty when VPC endpoints and explicit security-group rules provide required access. | `set(string)` | `[]` | no |
 | load\_balancer | ALB target group wiring. Set only for the internet-facing service (gateway). | ```object({ target_group_arn = string container_port = number })``` | `null` | no |
 | log\_level | LOG\_LEVEL environment variable value. | `string` | `"info"` | no |
 | memory | Fargate task memory in MiB. | `number` | `512` | no |
-| service\_discovery\_namespace\_id | Cloud Map namespace ID. When set, a service discovery record is registered. | `string` | `null` | no |
+| service\_discovery\_namespace\_id | Cloud Map namespace ID used when service discovery is enabled. | `string` | `null` | no |
 | tags | Additional tags merged onto every resource. | `map(string)` | `{}` | no |
 
 ## Outputs
