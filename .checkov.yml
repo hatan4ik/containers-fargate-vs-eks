@@ -6,6 +6,8 @@ skip-path:
 
 # AWS KMS key policies require Resource "*". These three checks are waived only
 # for the state-key policy, where explicit principals are the real boundary.
+# Exception review expires 2027-09-18; remove it when Checkov models this AWS
+# KMS requirement without treating its required wildcard resource as a finding.
 skip-check:
   - CKV_AWS_109
   - CKV_AWS_111
