@@ -11,11 +11,12 @@ provider "aws" {
 run "tls_listener_plan" {
   command = plan
   variables {
-    name              = "test-cluster"
-    vpc_id            = "vpc-00000000000000001"
-    vpc_cidr          = "10.0.0.0/16"
-    public_subnet_ids = ["subnet-00000000000000001", "subnet-00000000000000002"]
-    certificate_arn   = "arn:aws:acm:us-east-1:123456789012:certificate/11111111-1111-1111-1111-111111111111"
+    name                    = "test-cluster"
+    vpc_id                  = "vpc-00000000000000001"
+    vpc_cidr                = "10.0.0.0/16"
+    public_subnet_ids       = ["subnet-00000000000000001", "subnet-00000000000000002"]
+    certificate_arn         = "arn:aws:acm:us-east-1:123456789012:certificate/11111111-1111-1111-1111-111111111111"
+    waf_log_destination_arn = "arn:aws:firehose:us-east-1:123456789012:deliverystream/aws-waf-logs-example"
     alb_access_logs = {
       bucket = "example-alb-access-logs"
     }
@@ -35,11 +36,12 @@ run "tls_listener_plan" {
 run "invalid_name_rejected" {
   command = plan
   variables {
-    name              = "THIS_IS_INVALID"
-    vpc_id            = "vpc-00000000000000001"
-    vpc_cidr          = "10.0.0.0/16"
-    public_subnet_ids = ["subnet-00000000000000001", "subnet-00000000000000002"]
-    certificate_arn   = "arn:aws:acm:us-east-1:123456789012:certificate/11111111-1111-1111-1111-111111111111"
+    name                    = "THIS_IS_INVALID"
+    vpc_id                  = "vpc-00000000000000001"
+    vpc_cidr                = "10.0.0.0/16"
+    public_subnet_ids       = ["subnet-00000000000000001", "subnet-00000000000000002"]
+    certificate_arn         = "arn:aws:acm:us-east-1:123456789012:certificate/11111111-1111-1111-1111-111111111111"
+    waf_log_destination_arn = "arn:aws:firehose:us-east-1:123456789012:deliverystream/aws-waf-logs-example"
     alb_access_logs = {
       bucket = "example-alb-access-logs"
     }
@@ -51,11 +53,12 @@ run "invalid_name_rejected" {
 run "invalid_cidr_rejected" {
   command = plan
   variables {
-    name              = "test-cluster"
-    vpc_id            = "vpc-00000000000000001"
-    vpc_cidr          = "not-a-cidr"
-    public_subnet_ids = ["subnet-00000000000000001", "subnet-00000000000000002"]
-    certificate_arn   = "arn:aws:acm:us-east-1:123456789012:certificate/11111111-1111-1111-1111-111111111111"
+    name                    = "test-cluster"
+    vpc_id                  = "vpc-00000000000000001"
+    vpc_cidr                = "not-a-cidr"
+    public_subnet_ids       = ["subnet-00000000000000001", "subnet-00000000000000002"]
+    certificate_arn         = "arn:aws:acm:us-east-1:123456789012:certificate/11111111-1111-1111-1111-111111111111"
+    waf_log_destination_arn = "arn:aws:firehose:us-east-1:123456789012:deliverystream/aws-waf-logs-example"
     alb_access_logs = {
       bucket = "example-alb-access-logs"
     }

@@ -42,9 +42,13 @@ No resources.
 
 | Name | Description | Type | Default | Required |
 | ---- | ----------- | ---- | ------- | :------: |
+| access\_log\_bucket\_name | Dedicated pre-provisioned S3 bucket that receives state-bucket server access logs. | `string` | n/a | yes |
 | apply\_policy\_arns | Approved least-privilege workload policy ARNs keyed by fargate-dev, fargate-prod, eks-dev, and eks-prod. | `map(set(string))` | n/a | yes |
+| kms\_key\_account\_root\_arn | AWS account root principal ARN that enables IAM policies to administer and use the state KMS key. | `string` | n/a | yes |
 | name | Organization/project prefix for state and CI identity resources. | `string` | n/a | yes |
 | region | AWS region containing the state bucket and KMS key. | `string` | n/a | yes |
+| replica\_bucket\_arn | Versioned, cross-region S3 bucket ARN used for Terraform state disaster recovery. | `string` | n/a | yes |
+| replica\_kms\_key\_arn | Customer-managed KMS key ARN in the replica region for replicated state objects. | `string` | n/a | yes |
 | state\_bucket\_name | Globally unique S3 bucket name for Terraform state. | `string` | n/a | yes |
 | github\_oidc\_provider\_arn | Existing GitHub Actions OIDC provider ARN, or null to create it. | `string` | `null` | no |
 | github\_repository | GitHub repository allowed to receive OIDC credentials. | `string` | `"hatan4ik/containers-fargate-vs-eks"` | no |

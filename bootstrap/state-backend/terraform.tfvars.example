@@ -2,6 +2,10 @@
 region            = "us-east-1"
 name              = "example-platform"
 state_bucket_name = "example-platform-terraform-state-<unique-suffix>"
+access_log_bucket_name = "example-platform-audit-logs-<unique-suffix>"
+replica_bucket_arn     = "arn:aws:s3:::example-platform-terraform-state-replica-<unique-suffix>"
+replica_kms_key_arn    = "arn:aws:kms:<replica-region>:<account-id>:key/<replica-key-id>"
+kms_key_account_root_arn = "arn:aws:iam::<account-id>:root"
 
 # Set this only if the AWS account already has the GitHub Actions OIDC provider.
 github_oidc_provider_arn = null

@@ -85,6 +85,17 @@ variable "enable_deletion_protection" {
   nullable    = false
 }
 
+variable "waf_log_destination_arn" {
+  type        = string
+  description = "Kinesis Data Firehose delivery stream ARN for WAF logs. AWS requires its delivery stream name to begin aws-waf-logs-."
+  nullable    = false
+
+  validation {
+    condition     = can(regex("^arn:[^:]+:firehose:[^:]+:[0-9]{12}:deliverystream/aws-waf-logs-.+$", var.waf_log_destination_arn))
+    error_message = "waf_log_destination_arn must be an aws-waf-logs-* Kinesis Data Firehose ARN."
+  }
+}
+
 variable "container_insights" {
   type        = bool
   description = "Enable ECS Container Insights on the cluster."

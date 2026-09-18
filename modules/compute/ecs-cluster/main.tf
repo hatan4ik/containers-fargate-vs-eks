@@ -64,6 +64,76 @@ resource "aws_lb" "this" {
   }
 }
 
+resource "aws_wafv2_web_acl" "this" {
+  name  = "${var.name}-web-acl"
+  scope = "REGIONAL"
+  tags  = local.tags
+
+  default_action {
+    allow {}
+  }
+
+  rule {
+    name     = "AWSManagedRulesAnonymousIpList"
+    priority = 0
+
+    override_action {
+      none {}
+    }
+
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesAnonymousIpList"
+        vendor_name = "AWS"
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "anonymous-ip-list"
+      sampled_requests_enabled   = true
+    }
+  }
+
+  rule {
+    name     = "AWSManagedRulesKnownBadInputsRuleSet"
+    priority = 1
+
+    override_action {
+      none {}
+    }
+
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesKnownBadInputsRuleSet"
+        vendor_name = "AWS"
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "known-bad-inputs"
+      sampled_requests_enabled   = true
+    }
+  }
+
+  visibility_config {
+    cloudwatch_metrics_enabled = true
+    metric_name                = "${var.name}-web-acl"
+    sampled_requests_enabled   = true
+  }
+}
+
+resource "aws_wafv2_web_acl_association" "alb" {
+  resource_arn = aws_lb.this.arn
+  web_acl_arn  = aws_wafv2_web_acl.this.arn
+}
+
+resource "aws_wafv2_web_acl_logging_configuration" "this" {
+  log_destination_configs = [var.waf_log_destination_arn]
+  resource_arn            = aws_wafv2_web_acl.this.arn
+}
+
 resource "aws_lb_target_group" "gateway" {
   name        = "${var.name}-tg-gw"
   port        = 3000

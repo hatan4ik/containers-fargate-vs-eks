@@ -6,6 +6,9 @@ on:
       - "bootstrap/**"
       - "modules/**"
       - "environments/**"
+      - "docs/terraform-security.md"
+      - ".checkov.yml"
+      - ".terraform-version"
       - ".github/workflows/terraform-quality.yml"
       - ".pre-commit-config.yaml"
       - ".terraform-docs.yml"
@@ -17,6 +20,9 @@ on:
       - "bootstrap/**"
       - "modules/**"
       - "environments/**"
+      - "docs/terraform-security.md"
+      - ".checkov.yml"
+      - ".terraform-version"
       - ".github/workflows/terraform-quality.yml"
       - ".pre-commit-config.yaml"
       - ".terraform-docs.yml"
@@ -32,6 +38,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Authorize tagged Git module retrieval
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config --global url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.16.3"

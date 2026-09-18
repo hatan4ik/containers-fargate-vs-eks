@@ -113,6 +113,12 @@ variable "enable_deletion_protection" {
   nullable    = false
 }
 
+variable "waf_log_destination_arn" {
+  type        = string
+  description = "Kinesis Data Firehose delivery stream ARN for mandatory WAF logs."
+  nullable    = false
+}
+
 variable "https_egress_cidrs" {
   type        = set(string)
   description = "CIDRs permitted for outbound HTTPS from every task. Prefer VPC endpoints and narrow CIDRs."

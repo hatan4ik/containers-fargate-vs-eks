@@ -22,6 +22,7 @@ run "minimal_topology_plan" {
     alb_access_logs = {
       bucket = "example-alb-access-logs"
     }
+    waf_log_destination_arn = "arn:aws:firehose:us-east-1:123456789012:deliverystream/aws-waf-logs-example"
     services = {
       gateway = { image = "123456789012.dkr.ecr.us-east-1.amazonaws.com/gateway@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" }
       orders  = { image = "123456789012.dkr.ecr.us-east-1.amazonaws.com/orders@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" }

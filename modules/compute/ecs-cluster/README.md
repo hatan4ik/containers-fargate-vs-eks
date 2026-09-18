@@ -38,6 +38,9 @@ No modules.
 | [aws_service_discovery_private_dns_namespace.ns](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/service_discovery_private_dns_namespace) | resource |
 | [aws_vpc_security_group_egress_rule.alb_to_gateway](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_security_group_egress_rule) | resource |
 | [aws_vpc_security_group_ingress_rule.alb_https](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_security_group_ingress_rule) | resource |
+| [aws_wafv2_web_acl.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/wafv2_web_acl) | resource |
+| [aws_wafv2_web_acl_association.alb](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/wafv2_web_acl_association) | resource |
+| [aws_wafv2_web_acl_logging_configuration.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/wafv2_web_acl_logging_configuration) | resource |
 | [aws_iam_policy_document.ecs_task_assume](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.task_ecs_exec](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 
@@ -51,6 +54,7 @@ No modules.
 | public\_subnet\_ids | Public subnet IDs for the ALB. | `list(string)` | n/a | yes |
 | vpc\_cidr | VPC CIDR block — used to scope security group egress rules. | `string` | n/a | yes |
 | vpc\_id | VPC ID where the cluster and ALB are deployed. | `string` | n/a | yes |
+| waf\_log\_destination\_arn | Kinesis Data Firehose delivery stream ARN for WAF logs. AWS requires its delivery stream name to begin aws-waf-logs-. | `string` | n/a | yes |
 | alb\_ingress\_cidrs | CIDRs permitted to reach the ALB. Empty creates no public listener ingress. | `set(string)` | `[]` | no |
 | allow\_public\_ingress | Explicitly permit 0.0.0.0/0 ALB ingress. Keep false unless a public internet-facing endpoint is required. | `bool` | `false` | no |
 | container\_insights | Enable ECS Container Insights on the cluster. | `bool` | `true` | no |

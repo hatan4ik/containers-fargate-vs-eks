@@ -5,6 +5,13 @@ resource "aws_vpc" "this" {
   tags                 = merge(local.tags, { Name = "${var.name}-vpc" })
 }
 
+# AWS creates a permissive default security group with every VPC. Manage it
+# explicitly with no rules so no workload can rely on it accidentally.
+resource "aws_default_security_group" "this" {
+  vpc_id = aws_vpc.this.id
+  tags   = merge(local.tags, { Name = "${var.name}-default-sg" })
+}
+
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.this.id
   tags   = merge(local.tags, { Name = "${var.name}-igw" })

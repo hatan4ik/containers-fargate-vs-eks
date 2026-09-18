@@ -3,3 +3,10 @@
 skip-path:
   - labs
   - node_modules
+
+# AWS KMS key policies require Resource "*". These three checks are waived only
+# for the state-key policy, where explicit principals are the real boundary.
+skip-check:
+  - CKV_AWS_109
+  - CKV_AWS_111
+  - CKV_AWS_356

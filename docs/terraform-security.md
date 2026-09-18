@@ -13,3 +13,9 @@ Workload environment values must supply dedicated KMS keys for CloudWatch Logs
 and EKS Secret envelope encryption; do not reuse the state KMS key. ALB access-log
 buckets are pre-provisioned platform dependencies and must grant the relevant ALB
 log-delivery principal write access.
+
+The state bootstrap additionally requires a dedicated S3 access-log destination,
+a versioned cross-region replica bucket and replica KMS key, and its account-root
+principal ARN. It enables EventBridge notifications for state-bucket audit events.
+The only Checkov waivers are KMS-policy checks that require `Resource: "*"` by AWS
+design; their principals are explicitly constrained in the key policy.

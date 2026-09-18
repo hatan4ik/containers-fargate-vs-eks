@@ -1,9 +1,13 @@
 module "terraform_state" {
   source = "../../modules/platform/terraform-state"
 
-  name        = var.name
-  bucket_name = var.state_bucket_name
-  tags        = local.tags
+  name                     = var.name
+  bucket_name              = var.state_bucket_name
+  access_log_bucket_name   = var.access_log_bucket_name
+  replica_bucket_arn       = var.replica_bucket_arn
+  replica_kms_key_arn      = var.replica_kms_key_arn
+  kms_key_account_root_arn = var.kms_key_account_root_arn
+  tags                     = local.tags
 }
 
 module "github_actions_oidc" {

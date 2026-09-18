@@ -21,6 +21,30 @@ variable "state_bucket_name" {
   nullable    = false
 }
 
+variable "access_log_bucket_name" {
+  type        = string
+  description = "Dedicated pre-provisioned S3 bucket that receives state-bucket server access logs."
+  nullable    = false
+}
+
+variable "replica_bucket_arn" {
+  type        = string
+  description = "Versioned, cross-region S3 bucket ARN used for Terraform state disaster recovery."
+  nullable    = false
+}
+
+variable "replica_kms_key_arn" {
+  type        = string
+  description = "Customer-managed KMS key ARN in the replica region for replicated state objects."
+  nullable    = false
+}
+
+variable "kms_key_account_root_arn" {
+  type        = string
+  description = "AWS account root principal ARN that enables IAM policies to administer and use the state KMS key."
+  nullable    = false
+}
+
 variable "github_repository" {
   type        = string
   description = "GitHub repository allowed to receive OIDC credentials."

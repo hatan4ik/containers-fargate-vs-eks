@@ -28,6 +28,7 @@ terraform-format:
 
 terraform-lint:
 	@for directory in $(TERRAFORM_MODULES) $(TERRAFORM_ROOTS); do \
+		terraform -chdir=$$directory init -backend=false -input=false >/dev/null; \
 		tflint --chdir=$$directory --config=$(TFLINT_CONFIG); \
 	done
 

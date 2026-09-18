@@ -33,6 +33,7 @@ module "cluster" {
   allow_public_ingress       = var.allow_public_ingress
   alb_access_logs            = var.alb_access_logs
   enable_deletion_protection = var.enable_deletion_protection
+  waf_log_destination_arn    = var.waf_log_destination_arn
   tags                       = local.tags
 }
 
