@@ -1,14 +1,17 @@
 variable "region" {
-  type    = string
-  default = "us-east-1"
+  type        = string
+  description = "AWS region where the EKS lab resources are created."
+  default     = "us-east-1"
 }
 variable "name" {
-  type    = string
-  default = "z2h"
+  type        = string
+  description = "Prefix applied to EKS lab resource names."
+  default     = "z2h"
 }
 variable "vpc_cidr" {
-  type    = string
-  default = "10.50.0.0/16"
+  type        = string
+  description = "IPv4 CIDR block for the EKS lab VPC."
+  default     = "10.50.0.0/16"
 }
 variable "availability_zone_count" {
   type        = number

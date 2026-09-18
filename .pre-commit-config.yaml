@@ -1,0 +1,28 @@
+repos:
+  - repo: local
+    hooks:
+      - id: terraform-format
+        name: terraform format
+        entry: make terraform-format
+        language: system
+        pass_filenames: false
+      - id: terraform-lint
+        name: terraform lint
+        entry: make terraform-lint
+        language: system
+        pass_filenames: false
+      - id: terraform-validate
+        name: terraform validate
+        entry: make terraform-validate
+        language: system
+        pass_filenames: false
+      - id: terraform-tests
+        name: terraform plan-only module tests
+        entry: make terraform-test
+        language: system
+        pass_filenames: false
+      - id: terraform-docs-check
+        name: terraform docs are current
+        entry: make terraform-docs-check
+        language: system
+        pass_filenames: false

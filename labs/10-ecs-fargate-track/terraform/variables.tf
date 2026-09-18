@@ -1,14 +1,17 @@
 variable "region" {
-  type    = string
-  default = "us-east-1"
+  type        = string
+  description = "AWS region where the Fargate lab resources are created."
+  default     = "us-east-1"
 }
 variable "name" {
-  type    = string
-  default = "z2h"
+  type        = string
+  description = "Prefix applied to Fargate lab resource names."
+  default     = "z2h"
 }
 variable "vpc_cidr" {
-  type    = string
-  default = "10.40.0.0/16"
+  type        = string
+  description = "IPv4 CIDR block for the Fargate lab VPC."
+  default     = "10.40.0.0/16"
 }
 variable "availability_zone_count" {
   type        = number
@@ -27,21 +30,24 @@ variable "single_nat_gateway" {
 }
 
 variable "image_gateway" {
-  type = string
+  type        = string
+  description = "Immutable container image URI for the gateway service."
   validation {
     condition     = can(regex("(@sha256:[0-9a-f]{64}|:sha-[0-9a-f]{40})$", var.image_gateway))
     error_message = "image_gateway must use an immutable digest or a sha-<40 hex> tag."
   }
 }
 variable "image_users" {
-  type = string
+  type        = string
+  description = "Immutable container image URI for the users service."
   validation {
     condition     = can(regex("(@sha256:[0-9a-f]{64}|:sha-[0-9a-f]{40})$", var.image_users))
     error_message = "image_users must use an immutable digest or a sha-<40 hex> tag."
   }
 }
 variable "image_orders" {
-  type = string
+  type        = string
+  description = "Immutable container image URI for the orders service."
   validation {
     condition     = can(regex("(@sha256:[0-9a-f]{64}|:sha-[0-9a-f]{40})$", var.image_orders))
     error_message = "image_orders must use an immutable digest or a sha-<40 hex> tag."

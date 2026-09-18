@@ -1,0 +1,21 @@
+# Copy to terraform.tfvars outside source control and replace every placeholder.
+region            = "us-east-1"
+name              = "example-platform"
+state_bucket_name = "example-platform-terraform-state-<unique-suffix>"
+
+# Set this only if the AWS account already has the GitHub Actions OIDC provider.
+github_oidc_provider_arn = null
+
+# These must be reviewed, environment-scoped customer-managed policies. The
+# bootstrap deliberately refuses broad administrator permissions.
+apply_policy_arns = {
+  fargate-dev  = ["arn:aws:iam::<account-id>:policy/terraform-fargate-dev-apply"]
+  fargate-prod = ["arn:aws:iam::<account-id>:policy/terraform-fargate-prod-apply"]
+  eks-dev      = ["arn:aws:iam::<account-id>:policy/terraform-eks-dev-apply"]
+  eks-prod     = ["arn:aws:iam::<account-id>:policy/terraform-eks-prod-apply"]
+}
+
+tags = {
+  Owner      = "platform"
+  CostCenter = "replace-me"
+}

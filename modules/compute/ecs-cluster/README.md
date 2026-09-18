@@ -1,0 +1,79 @@
+# ECS cluster and ingress
+
+Creates an ECS cluster, Cloud Map namespace, task roles, ALB, and gateway target
+group. TLS is caller-owned: pass an already validated ACM certificate ARN. HTTP-only
+or world-open ingress require explicit, reviewable opt-ins.
+
+<!-- BEGIN_TF_DOCS -->
+## Requirements
+
+| Name | Version |
+| ---- | ------- |
+| terraform | >= 1.6.0 |
+| aws | ~> 6.0 |
+
+## Providers
+
+| Name | Version |
+| ---- | ------- |
+| aws | 6.65.0 |
+
+## Modules
+
+No modules.
+
+## Resources
+
+| Name | Type |
+| ---- | ---- |
+| [aws_ecs_cluster.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_cluster) | resource |
+| [aws_iam_role.task](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
+| [aws_iam_role.task_execution](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
+| [aws_iam_role_policy.task_ecs_exec](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
+| [aws_iam_role_policy_attachment.task_exec_attach](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_lb.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb) | resource |
+| [aws_lb_listener.http](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener) | resource |
+| [aws_lb_listener.https](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener) | resource |
+| [aws_lb_target_group.gateway](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_target_group) | resource |
+| [aws_security_group.alb](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group) | resource |
+| [aws_service_discovery_private_dns_namespace.ns](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/service_discovery_private_dns_namespace) | resource |
+| [aws_vpc_security_group_egress_rule.alb_to_gateway](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_security_group_egress_rule) | resource |
+| [aws_vpc_security_group_ingress_rule.alb_http](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_security_group_ingress_rule) | resource |
+| [aws_vpc_security_group_ingress_rule.alb_https](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_security_group_ingress_rule) | resource |
+| [aws_iam_policy_document.ecs_task_assume](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.task_ecs_exec](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+
+## Inputs
+
+| Name | Description | Type | Default | Required |
+| ---- | ----------- | ---- | ------- | :------: |
+| name | Name prefix for all resources in this module. | `string` | n/a | yes |
+| public\_subnet\_ids | Public subnet IDs for the ALB. | `list(string)` | n/a | yes |
+| vpc\_cidr | VPC CIDR block — used to scope security group egress rules. | `string` | n/a | yes |
+| vpc\_id | VPC ID where the cluster and ALB are deployed. | `string` | n/a | yes |
+| alb\_ingress\_cidrs | CIDRs permitted to reach the ALB. Empty creates no public listener ingress. | `set(string)` | `[]` | no |
+| allow\_insecure\_http | Explicitly permit HTTP-only ALB traffic when no certificate is provided. Keep false for production. | `bool` | `false` | no |
+| allow\_public\_ingress | Explicitly permit 0.0.0.0/0 ALB ingress. Keep false unless a public internet-facing endpoint is required. | `bool` | `false` | no |
+| certificate\_arn | ACM certificate ARN for HTTPS on the ALB. When provided, port 80 redirects to 443. | `string` | `null` | no |
+| container\_insights | Enable ECS Container Insights on the cluster. | `bool` | `true` | no |
+| tags | Additional tags merged onto every resource. | `map(string)` | `{}` | no |
+
+## Outputs
+
+| Name | Description |
+| ---- | ----------- |
+| acm\_certificate\_arn | Provided ACM certificate ARN in use. Null when explicitly HTTP-only. |
+| alb\_arn | ALB ARN. |
+| alb\_dns\_name | ALB DNS name. |
+| alb\_sg\_id | ALB security group ID. |
+| alb\_zone\_id | ALB hosted zone ID (for Route 53 alias records). |
+| cluster\_id | ECS cluster ID. |
+| cluster\_name | ECS cluster name. |
+| gateway\_target\_group\_arn | Target group ARN for the gateway service. |
+| http\_listener\_arn | HTTP listener ARN. |
+| https\_listener\_arn | HTTPS listener ARN. Null when no certificate is configured. |
+| service\_discovery\_namespace\_id | Cloud Map private DNS namespace ID. |
+| service\_discovery\_namespace\_name | Cloud Map private DNS namespace name (e.g. z2h-dev.local). |
+| task\_execution\_role\_arn | ECS task execution IAM role ARN (shared by all services). |
+| task\_role\_arn | ECS task IAM role ARN (shared by all services). |
+<!-- END_TF_DOCS -->

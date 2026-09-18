@@ -1,0 +1,9 @@
+# Run the initial bootstrap with `terraform init -backend=false`.
+# After the S3 bucket exists, copy this file outside source control, replace the
+# placeholders, and run `terraform init -migrate-state -backend-config=...`.
+bucket       = "replace-with-state-bucket-name"
+key          = "containers-fargate-vs-eks/bootstrap/state-backend/terraform.tfstate"
+region       = "us-east-1"
+kms_key_id   = "replace-with-kms-key-id"
+encrypt      = true
+use_lockfile = true
