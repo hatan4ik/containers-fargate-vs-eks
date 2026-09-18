@@ -21,8 +21,9 @@ TERRAFORM_ROOTS := \
 # Keep generated documentation byte-for-byte identical in local development and CI.
 TERRAFORM_DOCS ?= docker run --rm -v $(CURDIR):/work -w /work quay.io/terraform-docs/terraform-docs:0.20.0
 TFLINT_CONFIG ?= $(CURDIR)/.tflint.hcl
+TERRAFORM_LOCK_PLATFORMS ?= -platform=darwin_amd64 -platform=linux_amd64
 
-.PHONY: terraform-format terraform-lint terraform-validate terraform-test terraform-docs terraform-docs-check terraform-ci
+.PHONY: terraform-format terraform-lint terraform-validate terraform-test terraform-lock terraform-docs terraform-docs-check terraform-ci
 
 terraform-format:
 	@for directory in $$(git ls-files '*.tf' '*.tfvars' '*.tftest.hcl' | xargs -n1 dirname | sort -u); do \
@@ -44,6 +45,11 @@ terraform-validate:
 terraform-test:
 	@for directory in $(TERRAFORM_MODULES); do \
 		terraform -chdir=$$directory test; \
+	done
+
+terraform-lock:
+	@for directory in $(TERRAFORM_MODULES) $(TERRAFORM_ROOTS); do \
+		terraform -chdir=$$directory providers lock $(TERRAFORM_LOCK_PLATFORMS); \
 	done
 
 terraform-docs:

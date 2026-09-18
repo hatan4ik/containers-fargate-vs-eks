@@ -61,6 +61,13 @@ npm ci
 The CI workflow runs the same checks, Terraform validation, Kubernetes rendering,
 and container builds before an image can be published.
 
+When intentionally upgrading a provider, regenerate the committed cross-platform
+dependency locks before opening the PR:
+
+```bash
+make terraform-lock
+```
+
 ## Service Mesh (optional)
 
 Phase 6: `docs/02-service-communication.md#phase-6-service-mesh-istio-optional`
