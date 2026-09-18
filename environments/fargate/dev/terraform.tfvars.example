@@ -21,6 +21,7 @@ allow_public_ingress           = false
 flow_log_kms_key_id            = "arn:aws:kms:us-east-1:123456789012:key/replace-me"
 application_log_kms_key_id     = "arn:aws:kms:us-east-1:123456789012:key/replace-me"
 alb_access_logs                = { bucket = "replace-with-alb-access-log-bucket", prefix = "fargate-dev" }
+waf_log_destination_arn        = "arn:aws:firehose:us-east-1:123456789012:deliverystream/aws-waf-logs-fargate-dev"
 https_egress_cidrs             = ["10.0.0.0/8"]
 allow_public_https_egress      = false
 

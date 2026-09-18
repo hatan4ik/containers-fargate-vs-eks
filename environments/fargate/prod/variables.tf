@@ -106,6 +106,12 @@ variable "alb_access_logs" {
   nullable    = false
 }
 
+variable "waf_log_destination_arn" {
+  type        = string
+  description = "Kinesis Data Firehose delivery stream ARN for mandatory WAF logs."
+  nullable    = false
+}
+
 variable "alb_ingress_cidrs" {
   type        = set(string)
   description = "CIDRs permitted to reach the production application load balancer."

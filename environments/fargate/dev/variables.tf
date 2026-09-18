@@ -123,6 +123,12 @@ variable "alb_access_logs" {
   nullable    = false
 }
 
+variable "waf_log_destination_arn" {
+  type        = string
+  description = "Kinesis Data Firehose delivery stream ARN for mandatory WAF logs."
+  nullable    = false
+}
+
 variable "https_egress_cidrs" {
   type        = set(string)
   description = "CIDRs permitted for outbound HTTPS. Prefer VPC endpoints and narrow ranges."
