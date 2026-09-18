@@ -1,0 +1,118 @@
+# Optional GitLab CI/CD authority for a mirrored repository. It is deliberately
+# manual/tag-triggered so it cannot race the active GitHub Actions authority.
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+    - if: '$CI_COMMIT_TAG =~ /^service-v/'
+    - when: never
+
+stages:
+  - verify
+  - plan
+  - publish
+
+variables:
+  TF_IN_AUTOMATION: "true"
+  TF_INPUT: "false"
+  TARGET_ENVIRONMENT:
+    value: "fargate-dev"
+    options: ["fargate-dev", "fargate-prod", "eks-dev", "eks-prod"]
+    description: "Protected environment to plan when manually starting a pipeline."
+
+application-quality:
+  stage: verify
+  image: node:22-bookworm
+  script:
+    - npm ci
+    - npm audit --omit=dev --audit-level=high
+    - ./scripts/lint.sh
+    - ./scripts/test.sh
+
+terraform-validate:
+  stage: verify
+  image:
+    name: hashicorp/terraform:1.16.3
+    entrypoint: [""]
+  before_script:
+    - apk add --no-cache git
+  script:
+    - terraform fmt -check -recursive
+    - >
+      for directory in bootstrap/state-backend bootstrap/external-ci-oidc
+      environments/fargate/dev environments/fargate/prod environments/eks/dev
+      environments/eks/prod labs/10-ecs-fargate-track/terraform labs/20-eks-track/terraform;
+      do terraform -chdir="$directory" init -backend=false -input=false && terraform -chdir="$directory" validate; done
+    - >
+      for directory in modules/platform/terraform-state modules/identity/github-actions-oidc
+      modules/identity/external-ci-oidc modules/network/vpc modules/observability/log-group
+      modules/compute/ecs-cluster modules/compute/ecs-service modules/compute/eks
+      modules/stacks/fargate-platform modules/stacks/eks-platform;
+      do terraform -chdir="$directory" init -backend=false -input=false && terraform -chdir="$directory" validate && terraform -chdir="$directory" test; done
+
+terraform-security:
+  stage: verify
+  image:
+    name: ghcr.io/bridgecrewio/checkov:3.3.19
+    entrypoint: [""]
+  script:
+    - checkov -d . --config-file .checkov.yml
+
+terraform-plan:
+  stage: plan
+  image:
+    name: hashicorp/terraform:1.16.3
+    entrypoint: [""]
+  environment:
+    name: $TARGET_ENVIRONMENT
+  resource_group: terraform-$TARGET_ENVIRONMENT
+  id_tokens:
+    GITLAB_AWS_OIDC_TOKEN:
+      aud: sts.amazonaws.com
+  before_script:
+    - apk add --no-cache git
+    - install -m 600 /dev/null "$CI_PROJECT_DIR/.aws-web-identity-token"
+    - printf '%s' "$GITLAB_AWS_OIDC_TOKEN" > "$CI_PROJECT_DIR/.aws-web-identity-token"
+    - export AWS_ROLE_ARN="$AWS_TERRAFORM_PLAN_ROLE_ARN"
+    - export AWS_WEB_IDENTITY_TOKEN_FILE="$CI_PROJECT_DIR/.aws-web-identity-token"
+    - export AWS_REGION="$AWS_REGION"
+  script:
+    - ./scripts/ci/terraform-plan.sh "$TARGET_ENVIRONMENT"
+  after_script:
+    - rm -f "$CI_PROJECT_DIR/.aws-web-identity-token"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+
+publish-ecr:
+  stage: publish
+  image: docker:27.5.1-cli
+  services:
+    - docker:27.5.1-dind
+  environment:
+    name: fargate-prod
+  resource_group: ecr-publish-fargate-prod
+  id_tokens:
+    GITLAB_AWS_OIDC_TOKEN:
+      aud: sts.amazonaws.com
+  variables:
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_CERTDIR: /certs
+  before_script:
+    - apk add --no-cache aws-cli
+    - install -m 600 /dev/null "$CI_PROJECT_DIR/.aws-web-identity-token"
+    - printf '%s' "$GITLAB_AWS_OIDC_TOKEN" > "$CI_PROJECT_DIR/.aws-web-identity-token"
+    - export AWS_ROLE_ARN="$AWS_ECR_PUBLISH_ROLE_ARN"
+    - export AWS_WEB_IDENTITY_TOKEN_FILE="$CI_PROJECT_DIR/.aws-web-identity-token"
+    - export AWS_REGION="$AWS_REGION"
+    - ': "${ECR_REGISTRY:?Configure ECR_REGISTRY as a protected fargate-prod variable}"'
+    - ': "${AWS_ECR_PUBLISH_ROLE_ARN:?Configure AWS_ECR_PUBLISH_ROLE_ARN as a protected fargate-prod variable}"'
+    - aws ecr get-login-password | docker login --username AWS --password-stdin "$ECR_REGISTRY"
+  script:
+    - >
+      for service in gateway users orders; do
+      docker build -f "services/$service/Dockerfile" -t "$ECR_REGISTRY/$service:sha-$CI_COMMIT_SHA" . &&
+      docker push "$ECR_REGISTRY/$service:sha-$CI_COMMIT_SHA";
+      done
+  after_script:
+    - rm -f "$CI_PROJECT_DIR/.aws-web-identity-token"
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^service-v/'

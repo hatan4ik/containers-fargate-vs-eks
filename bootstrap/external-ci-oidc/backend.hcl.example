@@ -1,0 +1,7 @@
+# Copy outside the repository and use after state-backend bootstrap succeeds.
+bucket       = "replace-with-state-bucket"
+key          = "containers-fargate-vs-eks/bootstrap/external-ci-oidc.tfstate"
+region       = "us-east-1"
+encrypt      = true
+kms_key_id   = "replace-with-state-kms-key-id"
+use_lockfile = true

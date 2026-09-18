@@ -1,0 +1,40 @@
+# Copy to an ignored terraform.tfvars and replace every placeholder.
+region = "us-east-1"
+name   = "example-platform"
+
+# Verify current thumbprints from each issuer before applying. The GitLab example
+# below is for GitLab.com. Azure DevOps needs your organization GUID in the issuer.
+providers = {
+  gitlab = {
+    issuer_url      = "https://gitlab.com"
+    audience        = "sts.amazonaws.com"
+    thumbprint_list = ["replace-with-40-character-sha1-thumbprint"]
+    roles = {
+      fargate-dev-plan = {
+        subject     = "project_path:replace-group/replace-project:environment:fargate-dev"
+        policy_arns = ["arn:aws:iam::<account-id>:policy/terraform-fargate-dev-plan"]
+        additional_string_equals = {
+          "gitlab.com:project_id" = ["replace-with-gitlab-project-id"]
+          "gitlab.com:ref_protected" = ["true"]
+        }
+      }
+    }
+  }
+
+  azure-devops = {
+    issuer_url      = "https://vstoken.dev.azure.com/<organization-guid>"
+    audience        = "api://AzureADTokenExchange"
+    thumbprint_list = ["replace-with-40-character-sha1-thumbprint"]
+    roles = {
+      fargate-dev-plan = {
+        subject     = "sc://<organization>/<project>/aws-terraform-plan-fargate-dev"
+        policy_arns = ["arn:aws:iam::<account-id>:policy/terraform-fargate-dev-plan"]
+      }
+    }
+  }
+}
+
+tags = {
+  Owner      = "platform"
+  CostCenter = "replace-me"
+}

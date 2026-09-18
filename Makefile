@@ -1,6 +1,7 @@
 TERRAFORM_MODULES := \
 	modules/platform/terraform-state \
 	modules/identity/github-actions-oidc \
+	modules/identity/external-ci-oidc \
 	modules/network/vpc \
 	modules/observability/log-group \
 	modules/compute/ecs-cluster \
@@ -11,6 +12,7 @@ TERRAFORM_MODULES := \
 
 TERRAFORM_ROOTS := \
 	bootstrap/state-backend \
+	bootstrap/external-ci-oidc \
 	environments/fargate/dev \
 	environments/fargate/prod \
 	environments/eks/dev \

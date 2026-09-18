@@ -1,0 +1,119 @@
+# Optional Azure DevOps pipeline. Create it manually and configure the named AWS
+# service connections with OIDC; no static AWS credentials are used.
+trigger: none
+pr: none
+
+parameters:
+  - name: targetEnvironment
+    displayName: Protected environment to plan
+    type: string
+    default: fargate-dev
+    values:
+      - fargate-dev
+      - fargate-prod
+      - eks-dev
+      - eks-prod
+  - name: publishImages
+    displayName: Publish immutable images after verification
+    type: boolean
+    default: false
+
+variables:
+  terraformVersion: "1.16.3"
+  ${{ if eq(parameters.targetEnvironment, 'fargate-dev') }}:
+    awsServiceConnection: "aws-terraform-plan-fargate-dev"
+  ${{ if eq(parameters.targetEnvironment, 'fargate-prod') }}:
+    awsServiceConnection: "aws-terraform-plan-fargate-prod"
+  ${{ if eq(parameters.targetEnvironment, 'eks-dev') }}:
+    awsServiceConnection: "aws-terraform-plan-eks-dev"
+  ${{ if eq(parameters.targetEnvironment, 'eks-prod') }}:
+    awsServiceConnection: "aws-terraform-plan-eks-prod"
+
+stages:
+  - stage: Verify
+    displayName: Verify source and Terraform
+    jobs:
+      - job: Quality
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: self
+            fetchDepth: 0
+          - task: NodeTool@0
+            inputs:
+              versionSpec: "22.x"
+          - task: TerraformInstaller@1
+            displayName: Install pinned Terraform
+            inputs:
+              terraformVersion: "$(terraformVersion)"
+          - bash: |
+              set -euo pipefail
+              npm ci
+              npm audit --omit=dev --audit-level=high
+              ./scripts/lint.sh
+              ./scripts/test.sh
+              make terraform-format terraform-validate terraform-test
+              docker run --rm -v "$(Build.SourcesDirectory):/work" -w /work ghcr.io/bridgecrewio/checkov:3.3.19 -d . --config-file .checkov.yml
+            displayName: Application, Terraform, and policy checks
+
+  - stage: Plan
+    displayName: OIDC-backed Terraform plan
+    dependsOn: Verify
+    jobs:
+      - deployment: TerraformPlan
+        displayName: Plan ${{ parameters.targetEnvironment }}
+        environment: ${{ parameters.targetEnvironment }}
+        pool:
+          vmImage: ubuntu-latest
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+                - task: TerraformInstaller@1
+                  displayName: Install pinned Terraform
+                  inputs:
+                    terraformVersion: "$(terraformVersion)"
+                - task: AWSShellScript@1
+                  displayName: Produce no-apply Terraform plan through AWS OIDC
+                  inputs:
+                    awsCredentials: "$(awsServiceConnection)"
+                    regionName: "$(AWS_REGION)"
+                    scriptType: inline
+                    inlineScript: "scripts/ci/terraform-plan.sh ${{ parameters.targetEnvironment }}"
+                    failOnStandardError: true
+                  env:
+                    TF_STATE_BUCKET: "$(TF_STATE_BUCKET)"
+                    TF_STATE_KMS_KEY_ID: "$(TF_STATE_KMS_KEY_ID)"
+                    TF_STATE_REGION: "$(TF_STATE_REGION)"
+                    TERRAFORM_TFVARS_B64: "$(TERRAFORM_TFVARS_B64)"
+
+  - ${{ if and(eq(parameters.publishImages, true), eq(parameters.targetEnvironment, 'fargate-prod')) }}:
+      - stage: Publish
+        displayName: Publish immutable ECR images
+        dependsOn: Plan
+        jobs:
+          - deployment: PublishEcr
+            environment: fargate-prod
+            pool:
+              vmImage: ubuntu-latest
+            strategy:
+              runOnce:
+                deploy:
+                  steps:
+                    - checkout: self
+                    - task: AWSShellScript@1
+                      displayName: Build and publish ECR images through AWS OIDC
+                      inputs:
+                        awsCredentials: "aws-ecr-publish-fargate-prod"
+                        regionName: "$(AWS_REGION)"
+                        scriptType: inline
+                        inlineScript: |
+                          set -euo pipefail
+                          : "${ECR_REGISTRY:?Configure ECR_REGISTRY in the protected variable group}"
+                          aws ecr get-login-password | docker login --username AWS --password-stdin "$ECR_REGISTRY"
+                          for service in gateway users orders; do
+                            docker build -f "services/$service/Dockerfile" -t "$ECR_REGISTRY/$service:sha-$(Build.SourceVersion)" .
+                            docker push "$ECR_REGISTRY/$service:sha-$(Build.SourceVersion)"
+                          done
+                        failOnStandardError: true
