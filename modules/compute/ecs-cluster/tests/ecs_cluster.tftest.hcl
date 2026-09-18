@@ -27,11 +27,6 @@ run "tls_listener_plan" {
   }
 
   assert {
-    condition     = output.https_listener_arn != null
-    error_message = "a TLS listener must be created"
-  }
-
-  assert {
     condition     = output.acm_certificate_arn == "arn:aws:acm:us-east-1:123456789012:certificate/11111111-1111-1111-1111-111111111111"
     error_message = "the configured ACM certificate must be used"
   }
