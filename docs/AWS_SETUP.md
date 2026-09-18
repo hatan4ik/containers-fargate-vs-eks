@@ -10,6 +10,9 @@ Use GitHub Actions as the active CI authority. The GitLab and Azure DevOps files
 in the repository are optional, manually triggered equivalents for a mirrored
 repository; choose one CI authority for a target AWS account and environment.
 
+If IAM Identity Center and local AWS CLI access have not yet been established,
+complete [ACCESS_SETUP.md](ACCESS_SETUP.md) before continuing.
+
 ## 1. Operator workstation and access
 
 Install the exact Terraform version in `.terraform-version`, AWS CLI v2, Git,

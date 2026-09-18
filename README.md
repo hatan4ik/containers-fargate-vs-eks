@@ -39,6 +39,8 @@ See `labs/00-setup/prerequisites.md`.
 For the complete production AWS path—external prerequisites, secure state
 bootstrap, OIDC CI configuration, and a first reviewed plan—follow
 [docs/AWS_SETUP.md](docs/AWS_SETUP.md).
+For the required human and CI access model, start with
+[docs/ACCESS_SETUP.md](docs/ACCESS_SETUP.md).
 
 ## CI/CD (OIDC)
 
